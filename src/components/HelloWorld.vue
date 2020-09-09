@@ -56,9 +56,4 @@ li {
 a {
     color: #42b983;
 }
-
-.mt-3 {
-    margin: 10px auto;
-    width: 400px;
-}
 </style>
