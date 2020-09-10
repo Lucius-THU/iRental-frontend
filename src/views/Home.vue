@@ -112,7 +112,7 @@ export default {
             items: []
         }
     },
-    mounted(){
+    created(){
         this.load()
     },
     methods: {
@@ -170,6 +170,8 @@ export default {
             this.axios.get('/api/equipment/').then(response => {
                 this.rows = response.data.total
                 this.items = response.data.list
+            }).catch(() => {
+                this.$router.push('/login')
             })
         },
         handleSubmit(){
