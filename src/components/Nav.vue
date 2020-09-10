@@ -4,15 +4,11 @@
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
             <b-navbar-nav>
-                <b-nav-item href="/my-rental">我的租借</b-nav-item>
+                <b-nav-item href="/rental">租借信息</b-nav-item>
                 <b-nav-item v-if="auth(['admin', 'provider'])" @click="toMyEquipment">我的设备</b-nav-item>
                 <b-nav-item v-if="auth(['admin'])" @click="toUsers">管理用户</b-nav-item>
             </b-navbar-nav>
             <b-navbar-nav class="ml-auto">
-                <b-nav-form>
-                    <b-form-input size="sm" class="mr-sm-2" placeholder="输入待查找的设备名……" type="search"></b-form-input>
-                    <b-button size="sm" class="my-2 my-sm-0" type="submit">搜索</b-button>
-                </b-nav-form>
                 <b-nav-item-dropdown right>
                     <template v-slot:button-content>
                         {{ user == '' ? email: user }}
@@ -87,9 +83,6 @@ export default {
             ]
         }
     },
-    computed: {
-
-    },
     async created(){
         await this.load()
         this.$emit('getContent', this.$store.state.user_id)
@@ -142,6 +135,8 @@ export default {
                 this.email = response.data.email
                 this.address = response.data.address
                 this.contact = response.data.contact
+            }).catch(error => {
+                if(error.response.status === 403) this.$router.push('/login')
             })
         }
     }

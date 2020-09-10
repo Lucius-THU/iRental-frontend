@@ -1,9 +1,34 @@
 <template>
     <div class="my-equipment">
         <Nav @getContent="load"></Nav>
+        <b-row style="margin-top: 30px;">
+            <b-col lg="6" class="my-1">
+                <b-form-group label="筛选器" label-cols-sm="3" label-align-sm="right" label-size="sm" label-for="filterInput" class="mb-0">
+                    <b-input-group size="sm">
+                        <b-form-input v-model="filter" type="search" id="filterInput" placeholder="键入以检索"></b-form-input>
+                        <b-input-group-append>
+                            <b-button :disabled="!filter" @click="filter = ''">清空</b-button>
+                        </b-input-group-append>
+                    </b-input-group>
+                </b-form-group>
+            </b-col>
+            <b-col lg="6" class="my-1">
+                <b-form-group label="选择字段以进行针对性筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
+                    <b-form-checkbox-group v-model="filterOn" class="mt-1">
+                        <b-form-checkbox value="id">设备编号</b-form-checkbox>
+                        <b-form-checkbox value="name">设备名</b-form-checkbox>
+                        <b-form-checkbox value="address">设备地址</b-form-checkbox>
+                    </b-form-checkbox-group>
+                </b-form-group>
+                <b-form-text>留空时默认对部分字段（包括未显示的）进行筛选</b-form-text>
+            </b-col>
+        </b-row>
         <div class="overflow-auto">
             <b-button class="add-equip" variant="outline-primary" @click="create">添加设备</b-button>
-            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy">
+            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy" :filter="filter" :filterIncludedFields="filterOn">
+                <template v-slot:table-colgroup="scope">
+                    <col v-for="field in scope.fields" :key="field.key" :style="{ width: field.key === 'id' ? '100px' : (field.key === 'address' ? '300px': '200px') }">
+                </template>
                 <template v-slot:table-busy>
                     <div class="text-center text-primary my-2">
                         <b-spinner class="align-middle"></b-spinner>
@@ -54,11 +79,12 @@
             <p>上架状态：{{ equip_info.launched ? '已上架': '未上架'}}</p>
             <p v-if="equip_info.launched">借出状态：{{ equip_info.used ? '已借出': '未借出' }}</p>
             <p v-if="!equip_info.launched">申请情况：{{ equip_info.requesting ? '正在申请上架': '未申请上架' }}</p>
+            <p>计划下架时间：{{ equip_info.expire_at }}</p>
             <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">上架</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id && $store.state.group !== 'admin') && !equip_info.launched && !equip_info.requesting" class="mt-3" block variant="success" @click="request">申请上架</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.launched" class="mt-3" block variant="warning" @click="discontinue">下架</b-button>
             <b-button v-if="equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin'" class="mt-3" block variant="primary" @click="update">修改</b-button>
-            <b-button v-if="$store.state.group === 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
+            <b-button v-if="$store.state.group === 'admin' || equip_info.provider_id === $store.state.user_id" class="mt-3" block variant="danger" @click="del">删除</b-button>
             <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
         </b-modal>
         <b-modal ref="update-equipment" title="修改设备" @ok='handle2Submit'>
@@ -90,6 +116,7 @@
 
 <script>
 import Nav from '../components/Nav.vue'
+import format from '../components/public.js'
 export default {
     name: 'MyEquipment',
     components: {
@@ -97,6 +124,8 @@ export default {
     },
     data(){
         return {
+            filter: '',
+            filterOn: [],
             currentPage: 1,
             rows: 0,
             perPage: 10,
@@ -184,7 +213,7 @@ export default {
             this.equip_info.requesting = item.requesting
             this.equip_info.used = (item.user_id !== null)
             this.equip_info.provider_id = item.provider_id
-            this.equip_info.expire_at = item.expire_at
+            this.equip_info.expire_at = format(item.expire_at)
             this.equip_info.date
             await this.axios.get('/api/users/' + item.provider_id).then(response => {
                 this.equip_info.contact = response.data.contact
@@ -192,30 +221,10 @@ export default {
             })
             this.$refs['equip-info'].show()
         },
-        format(time, format) {
-            let t = new Date(time)
-            let tf = i => ((i < 10 ? '0' : '') + i)
-            return format.replace(/yyyy|MM|dd|HH|mm|ss/g, a => {
-                switch(a) {
-                    case 'yyyy':
-                        return tf(t.getFullYear())
-                    case 'MM':
-                        return tf(t.getMonth() + 1)
-                    case 'mm':
-                        return tf(t.getMinutes())
-                    case 'dd':
-                        return tf(t.getDate())
-                    case 'HH':
-                        return tf(t.getHours())
-                    case 'ss':
-                        return tf(t.getSeconds())
-                    }
-            })
-        },
         update(){
             this.equip_name = this.equip_info.name
             this.equip_addr = this.equip_info.address
-            let time = this.format(this.equip_info.expire_at, 'yyyy-MM-dd HH:mm:ss').split(' ')
+            let time = this.equip_info.expire_at.split(' ')
             this.equip_date = time[0]
             this.equip_time = time[1]
             this.$refs['update-equipment'].show()

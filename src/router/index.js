@@ -5,6 +5,7 @@ import Login from '../views/Login.vue'
 import Signup from '../views/Signup.vue'
 import MyEquipment from '../views/MyEquipment.vue'
 import Users from '../views/Users.vue'
+import Rental from '../views/Rental.vue'
 
 Vue.use(VueRouter)
 
@@ -37,7 +38,12 @@ Vue.use(VueRouter)
     {
         path: '/users',
         name: 'Users',
-        component: Users,
+        component: Users
+    },
+    {
+        path: '/rental',
+        name: 'Rental',
+        component: Rental
     }
 ]
 

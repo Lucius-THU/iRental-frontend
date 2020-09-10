@@ -15,6 +15,6 @@
 
 .overflow-auto {
     width: 85%;
-    margin: 20px auto;
+    margin: 30px auto;
 }
 </style>

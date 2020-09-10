@@ -62,7 +62,7 @@
                         <b-form-select id="auth-input" v-model="group" :options="options"></b-form-select>
                     </b-input-group>
                 </b-form-group>
-                <b-button class="mt-3" block variant="danger" @click="del">删除</b-button>
+                <b-button v-if="group !== 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
             </b-form>
         </b-modal>
     </div>
