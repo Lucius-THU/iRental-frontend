@@ -72,8 +72,11 @@ export default {
         signup(){
             this.onceTry = true
             if(this.state){
-                this.axios.post('/api/signup').then({
-
+                this.axios.post('/api/signup', {
+                    email: this.email,
+                    password: this.password
+                }).then(() => {
+                    this.$router.push('/login')
                 })
             }
         }

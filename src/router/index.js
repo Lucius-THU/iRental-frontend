@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Signup from '../views/Signup.vue'
+import MyEquipment from '../views/MyEquipment.vue'
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ Vue.use(VueRouter)
         name: 'Signup',
         component: Signup
     },
+    {
+        path: '/my-equipment',
+        name: 'MyEquipment',
+        component: MyEquipment
+    }
 ]
 
 const router = new VueRouter({

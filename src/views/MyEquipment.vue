@@ -1,5 +1,5 @@
 <template>
-    <div class="home">
+    <div class="my-equipment">
         <Nav></Nav>
         <div class="overflow-auto">
             <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" small></b-table>
@@ -11,7 +11,7 @@
 <script>
 import Nav from '../components/Nav.vue'
 export default {
-    name: 'Home',
+    name: 'MyEquipment',
     components: {
         Nav
     },
@@ -24,7 +24,11 @@ export default {
         }
     },
     mounted(){
-        this.axios.get('/api/equipment/').then(response => {
+        this.axios.get('/api/equipment/', {
+            params: {
+                provider_id: this.$store.state.user_id
+            }
+        }).then(response => {
             this.rows = response.data.total
             this.items = response.data.list
         })

@@ -9,7 +9,7 @@
                     <b-form-input id="input-1" v-model="email" type="email" :state="emailState"></b-form-input>
                 </b-input-group>
             </b-form-group>
-            <b-form-group label="密码" label-for="input-2" invalid-feedback="请输入密码" :state="pwdState">
+            <b-form-group label="密码" label-for="input-2" :invalid-feedback="invalidFeedback" :state="pwdState">
                 <b-input-group>
                     <b-input-group-prepend is-text>
                         <b-icon icon="shield-lock-fill"></b-icon>
@@ -30,7 +30,8 @@ export default {
         return {
             email: '',
             password: '',
-            onceTry: false
+            onceTry: false,
+            error: false
         }
     },
     computed: {
@@ -44,14 +45,29 @@ export default {
         pwdState(){
             if(!this.onceTry) return null
             return this.password != ''
-        }
+        },
+        invalidFeedback(){
+            if(this.error) {
+                return '账号或密码错误'
+            } else {
+                return '请输入密码'
+            }
+        },
     },
     methods: {
         login(){
             this.onceTry = true
             if(this.emailState && this.pwdState){
-                this.axios.post('/api/login').then({
-
+                this.axios.post('/api/login', {
+                    email: this.email,
+                    password: this.password
+                }).then(response => {
+                    this.$store.commit('setUsername', response.data.name == '' ? this.email: response.data.name)
+                    this.$store.commit('setGroup', response.data.group)
+                    this.$router.push('/')
+                }).catch(() => {
+                    this.error = true
+                    this.password = ''
                 })
             }
         }
