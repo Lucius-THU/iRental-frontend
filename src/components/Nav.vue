@@ -84,8 +84,8 @@ export default {
     computed: {
 
     },
-    created(){
-        this.load()
+    async created(){
+        await this.load()
         this.$emit('getContent', this.$store.state.user_id)
     },
     methods: {
@@ -124,8 +124,8 @@ export default {
                 this.load()
             })
         },
-        load(){
-            this.axios.get('/api/users/current').then(response => {
+        async load(){
+            await this.axios.get('/api/users/current').then(response => {
                 this.$store.commit('setUserid', response.data.id)
                 this.$store.commit('setUsername', response.data.name)
                 this.$store.commit('setGroup', response.data.group)
