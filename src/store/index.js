@@ -9,7 +9,8 @@ export default new Vuex.Store({
         username: '',
         address: '',
         contact: '',
-        group: ''
+        group: '',
+        email: ''
     },
     mutations: {
         setUserid(state, user_id){
@@ -26,6 +27,9 @@ export default new Vuex.Store({
         },
         setGroup(state, group){
             state.group = group
+        },
+        setEmail(state, email){
+            state.email = email
         }
     },
     actions: {

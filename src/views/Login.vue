@@ -62,7 +62,6 @@ export default {
                     email: this.email,
                     password: this.password
                 }).then(response => {
-                    this.$store.commit('setUsername', response.data.name == '' ? this.email: response.data.name)
                     this.$store.commit('setGroup', response.data.group)
                     this.$router.push('/')
                 }).catch(() => {

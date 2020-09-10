@@ -12,4 +12,9 @@
     -moz-osx-font-smoothing: grayscale;
     color: #2c3e50;
 }
+
+.overflow-auto {
+    width: 85%;
+    margin: 20px auto;
+}
 </style>

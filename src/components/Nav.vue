@@ -9,18 +9,62 @@
             </b-navbar-nav>
             <b-navbar-nav class="ml-auto">
                 <b-nav-form>
-                    <b-form-input size="sm" class="mr-sm-2" placeholder="输入待查找的设备名……"></b-form-input>
+                    <b-form-input size="sm" class="mr-sm-2" placeholder="输入待查找的设备名……" type="search"></b-form-input>
                     <b-button size="sm" class="my-2 my-sm-0" type="submit">搜索</b-button>
                 </b-nav-form>
                 <b-nav-item-dropdown right>
                     <template v-slot:button-content>
-                        {{ user }}
+                        {{ user == '' ? email: user }}
                     </template>
-                    <b-dropdown-item href="#">个人信息</b-dropdown-item>
+                    <b-dropdown-item @click="showModal">个人信息</b-dropdown-item>
                     <b-dropdown-item @click="logout">登出</b-dropdown-item>
                 </b-nav-item-dropdown>
             </b-navbar-nav>
         </b-collapse>
+        <b-modal ref="person-info" title="个人信息" @hidden="hideModal" @ok="handleSubmit">
+            <b-form ref="form" @submit.stop.prevent="handleSubmit">
+                <b-form-group label="用户名" label-for="name-input">
+                    <b-input-group>
+                        <b-input-group-prepend is-text>
+                            <b-icon icon="person-circle"></b-icon>
+                        </b-input-group-prepend>
+                        <b-form-input id="name-input" v-model="name"></b-form-input>
+                    </b-input-group>
+                </b-form-group>
+                <b-form-group label="地址" label-for="address-input">
+                    <b-input-group>
+                        <b-input-group-prepend is-text>
+                            <b-icon icon="house-door-fill"></b-icon>
+                        </b-input-group-prepend>
+                        <b-form-input id="address-input" v-model="address"></b-form-input>
+                    </b-input-group>
+                </b-form-group>
+                <b-form-group label="邮箱" label-for="email-input">
+                    <b-input-group>
+                        <b-input-group-prepend is-text>
+                            <b-icon icon="envelope-fill"></b-icon>
+                        </b-input-group-prepend>
+                        <b-form-input id="email-input" v-model="email" disabled></b-form-input>
+                    </b-input-group>
+                </b-form-group>
+                <b-form-group label="联系电话" label-for="contact-input">
+                    <b-input-group>
+                        <b-input-group-prepend is-text>
+                            <b-icon icon="phone-fill"></b-icon>
+                        </b-input-group-prepend>
+                        <b-form-input id="contact-input" v-model="contact" type="tel"></b-form-input>
+                    </b-input-group>
+                </b-form-group>
+                <b-form-group label="权限" label-for="auth-input">
+                    <b-input-group>
+                        <b-input-group-prepend is-text>
+                            <b-icon icon="gear-wide-connected"></b-icon>
+                        </b-input-group-prepend>
+                        <b-form-input id="auth-input" disabled :value="check(group)"></b-form-input>
+                    </b-input-group>
+                </b-form-group>
+            </b-form>
+        </b-modal>
     </b-navbar>
 </template>
 
@@ -30,19 +74,19 @@ export default {
     data(){
         return {
             user: this.$store.state.username,
-            group: this.$store.state.group
+            group: this.$store.state.group,
+            name: '',
+            email: '',
+            address: '',
+            contact: '',
         }
     },
+    computed: {
+
+    },
     created(){
-        this.axios.get('/api/users/current').then(response => {
-            this.$store.commit('setUserid', response.data.id)
-            this.$store.commit('setUsername', response.data.name == '' ? response.data.email: response.data.name)
-            this.$store.commit('setAddress', response.data.address)
-            this.$store.commit('setContact', response.data.contact)
-            this.$store.commit('setGroup', response.data.group)
-            this.user = this.$store.state.username
-            this.group = this.$store.state.group
-        })
+        this.load()
+        this.$emit('getContent', this.$store.state.user_id)
     },
     methods: {
         logout(){
@@ -55,6 +99,46 @@ export default {
         },
         toMyEquipment(){
             this.$router.push('/my-equipment')
+        },
+        showModal(){
+            this.$refs['person-info'].show()
+        },
+        hideModal(){
+            this.name = this.$store.state.username
+            this.address = this.$store.state.address
+            this.contact = this.$store.state.contact
+            this.$refs['person-info'].hide()
+        },
+        check(auth){
+            if(auth === 'admin') return '管理员'
+            if(auth === 'provider') return '设备提供者'
+            return '普通用户'
+        },
+        handleSubmit(){
+            this.axios.post('/api/users/' + this.$store.state.user_id + '/update', {
+                name: this.name,
+                address: this.address,
+                contact: this.contact,
+                group: this.group
+            }).then(() => {
+                this.load()
+            })
+        },
+        load(){
+            this.axios.get('/api/users/current').then(response => {
+                this.$store.commit('setUserid', response.data.id)
+                this.$store.commit('setUsername', response.data.name)
+                this.$store.commit('setGroup', response.data.group)
+                this.$store.commit('setAddress', response.data.address)
+                this.$store.commit('setContact', response.data.contact)
+                this.$store.commit('setEmail', response.data.email)
+                this.group = response.data.group
+                this.name = response.data.name
+                this.user = response.data.name
+                this.email = response.data.email
+                this.address = response.data.address
+                this.contact = response.data.contact
+            })
         }
     }
 }
