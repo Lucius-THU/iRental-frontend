@@ -271,4 +271,4 @@ export default {
 .add-equip {
     margin: 5px 10px 20px 10px;
 }
-</style>>
+</style>

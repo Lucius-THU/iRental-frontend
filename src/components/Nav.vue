@@ -6,6 +6,7 @@
             <b-navbar-nav>
                 <b-nav-item href="/my-rental">我的租借</b-nav-item>
                 <b-nav-item v-if="auth(['admin', 'provider'])" @click="toMyEquipment">我的设备</b-nav-item>
+                <b-nav-item v-if="auth(['admin'])" @click="toUsers">管理用户</b-nav-item>
             </b-navbar-nav>
             <b-navbar-nav class="ml-auto">
                 <b-nav-form>
@@ -60,7 +61,7 @@
                         <b-input-group-prepend is-text>
                             <b-icon icon="gear-wide-connected"></b-icon>
                         </b-input-group-prepend>
-                        <b-form-input id="auth-input" disabled :value="check(group)"></b-form-input>
+                        <b-form-select id="auth-input" v-model="group" :options="options" :disabled="group !== 'admin'"></b-form-select>
                     </b-input-group>
                 </b-form-group>
             </b-form>
@@ -79,6 +80,11 @@ export default {
             email: '',
             address: '',
             contact: '',
+            options: [
+                { value: 'admin', text: '管理员' },
+                { value: 'provider', text: '设备提供者' },
+                { value: 'user', text: '普通用户' }
+            ]
         }
     },
     computed: {
@@ -100,6 +106,9 @@ export default {
         toMyEquipment(){
             this.$router.push('/my-equipment')
         },
+        toUsers(){
+            this.$router.push('/users')
+        },
         showModal(){
             this.$refs['person-info'].show()
         },
@@ -108,11 +117,6 @@ export default {
             this.address = this.$store.state.address
             this.contact = this.$store.state.contact
             this.$refs['person-info'].hide()
-        },
-        check(auth){
-            if(auth === 'admin') return '管理员'
-            if(auth === 'provider') return '设备提供者'
-            return '普通用户'
         },
         handleSubmit(){
             this.axios.post('/api/users/' + this.$store.state.user_id + '/update', {
