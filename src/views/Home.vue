@@ -24,7 +24,8 @@
             </b-col>
         </b-row>
         <div class="overflow-auto">
-            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :filter="filter" :filterIncludedFields="filterOn">
+            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :filter="filter" :filterIncludedFields="filterOn"
+            :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
                 <template v-slot:table-colgroup="scope">
                     <col v-for="field in scope.fields" :key="field.key" :style="{ width: field.key === 'id' ? '100px' : (field.key === 'address' ? '300px': '200px') }">
                 </template>
@@ -44,6 +45,7 @@
             <p>联系方式：{{ equip_info.contact }}</p>
             <p>上架状态：{{ equip_info.launched ? '已上架': '未上架'}}</p>
             <p v-if="equip_info.launched">借出状态：{{ equip_info.used ? '已借出': '未借出' }}</p>
+            <p v-if="equip_info.launched">预计归还时间：{{ equip_info.rent_until }}</p>
             <p v-if="!equip_info.launched">申请情况：{{ equip_info.requesting ? '正在申请上架': '未申请上架' }}</p>
             <p>计划下架时间：{{ equip_info.expire_at }}</p>
             <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">上架</b-button>
@@ -111,6 +113,8 @@ export default {
             equip_addr: '',
             equip_date: '',
             equip_time: '',
+            sortBy: 'status',
+            sortDesc: true,
             equip_info: {
                 address: '',
                 contact: '',
@@ -120,7 +124,8 @@ export default {
                 name: '',
                 requesting: false,
                 provider_name: '',
-                provider_id: 0
+                provider_id: 0,
+                rent_until: ''
             },
             purpose: '',
             expire_date: '',
@@ -150,6 +155,7 @@ export default {
                         if(item['requesting']) return '正在申请上架'
                         return '待上架'
                     },
+                    sortByFormatted: true,
                 },
                 {
                     key: 'actions',
@@ -172,6 +178,7 @@ export default {
             this.equip_info.used = (item.user_id !== null)
             this.equip_info.provider_id = item.provider_id
             this.equip_info.expire_at = format(item.expire_at)
+            if(this.equip_info.used) this.equip_info.rent_until = format(item.rent_until)
             this.equip_info.date
             await this.axios.get('/api/users/' + item.provider_id).then(response => {
                 this.equip_info.contact = response.data.contact
