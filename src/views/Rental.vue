@@ -31,15 +31,12 @@
                     </b-modal>
                 </b-tab>
                 <b-tab title="租借记录" active>
-                    <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy">
+                    <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
                                 <strong>Loading...</strong>
                             </div>
-                        </template>
-                        <template v-slot:cell(status)="data">
-                            {{ status(data.item.approved, data.item.rejected) }}
                         </template>
                         <template v-slot:cell(actions)="data">
                             <b-button size="sm" @click="info(data.item)" class="mr-1" variant="outline-primary">
@@ -56,9 +53,9 @@
                         <p>申请理由：{{ req_info.purpose }}</p>
                         <p>计划归还时间：{{ req_info.expired_at }}</p>
                         <p>状态：{{ req_info.status }}</p>
-                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理'" class="mt-3" block variant="success" @click="update(true)">同意</b-button>
-                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理'" class="mt-3" block variant="warning" @click="update(false)">拒绝</b-button>
-                        <b-button v-if="$store.state.group === 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
+                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理' && req_info.canedit" class="mt-3" block variant="success" @click="update(true)">同意</b-button>
+                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理'  && req_info.canedit" class="mt-3" block variant="warning" @click="update(false)">拒绝</b-button>
+                        <b-button v-if="$store.state.group === 'admin' && req_info.canedit" class="mt-3" block variant="danger" @click="del">删除</b-button>
                         <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
@@ -86,6 +83,8 @@ export default {
             items: [],
             items2: [],
             isBusy: false,
+            sortBy: 'status',
+            sortAsc: true,
             req_info: {
                 id: 0,
                 user_id: 0,
@@ -94,7 +93,8 @@ export default {
                 username: '',
                 purpose: '',
                 expired_at: '',
-                status: ''
+                status: '',
+                canedit: true
             },
             equip_info: {
                 id: 0,
@@ -124,7 +124,13 @@ export default {
                 {
                     key: 'status',
                     label: '状态',
-                    sortable: true
+                    sortable: true,
+                    formatter: (value, key, item) => {
+                        if(item.approved === false && item.rejected === true) return '已拒绝'
+                        if(item.approved === true) return '已同意'
+                        return '待处理'
+                    },
+                    sortByFormatted: true,
                 },
                 {
                     key: 'actions',
@@ -180,7 +186,13 @@ export default {
                         id: items[i]['equipment_id']
                     }
                 }).then(response => {
-                    items[i]['equipment_name'] = response.data.list[0].name
+                    if(response.data.list.length === 0){
+                        items[i]['equipment_name'] = '已下架'
+                        items[i]['canedit'] = false
+                    } else {
+                        items[i]['equipment_name'] = response.data.list[0].name
+                        items[i]['canedit'] = !(items[i]['user_id'] !== null)
+                    } 
                 })
             }
             this.items = items
@@ -200,6 +212,7 @@ export default {
             this.req_info.purpose = item.purpose
             this.req_info.expired_at = format(item.rent_until)
             this.req_info.status = this.status(item.approved, item.rejected)
+            this.req_info.canedit = item.canedit
             this.$refs['request-info'].show()
         },
         info2(item){

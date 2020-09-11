@@ -52,7 +52,7 @@
             <b-button v-if="(equip_info.provider_id === $store.state.user_id && $store.state.group !== 'admin') && !equip_info.launched && !equip_info.requesting" class="mt-3" block variant="success" @click="request">申请上架</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.launched" class="mt-3" block variant="warning" @click="discontinue">下架</b-button>
             <b-button v-if="equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin'" class="mt-3" block variant="primary" @click="update">修改</b-button>
-            <b-button v-if="equip_info.provider_id !== $store.state.user_id && equip_info.launched" class="mt-3" block variant="primary" @click="requests">申请租借</b-button>
+            <b-button v-if="equip_info.provider_id !== $store.state.user_id && equip_info.launched && !equip_info.used" class="mt-3" block variant="primary" @click="requests">申请租借</b-button>
             <b-button v-if="$store.state.group === 'admin' || equip_info.provider_id === $store.state.user_id" class="mt-3" block variant="danger" @click="del">删除</b-button>
             <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
         </b-modal>
@@ -246,7 +246,7 @@ export default {
             this.axios.post('/api/requests/rental/create', {
                 equipment_id: this.equip_info.equip_id,
                 purpose: this.purpose,
-                expire_at: this.expire_date + 'T' + this.expire_time + '+08:00'
+                rent_until: this.expire_date + 'T' + this.expire_time + '+08:00'
             }).then(() => {
                 this.$refs['equip-info'].hide()
             })

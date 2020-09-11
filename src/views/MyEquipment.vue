@@ -80,9 +80,9 @@
             <p>计划下架时间：{{ equip_info.expire_at }}</p>
             <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">上架</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id && $store.state.group !== 'admin') && !equip_info.launched && !equip_info.requesting" class="mt-3" block variant="success" @click="request">申请上架</b-button>
-            <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.launched" class="mt-3" block variant="warning" @click="discontinue">下架</b-button>
+            <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.launched && !equip_info.used" class="mt-3" block variant="warning" @click="discontinue">下架</b-button>
             <b-button v-if="equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin'" class="mt-3" block variant="primary" @click="update">修改</b-button>
-            <b-button v-if="$store.state.group === 'admin' || equip_info.provider_id === $store.state.user_id" class="mt-3" block variant="danger" @click="del">删除</b-button>
+            <b-button v-if="($store.state.group === 'admin' || equip_info.provider_id === $store.state.user_id) && !equip_info.used" class="mt-3" block variant="danger" @click="del">删除</b-button>
             <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
         </b-modal>
         <b-modal ref="update-equipment" title="修改设备" @ok='handle2Submit'>
