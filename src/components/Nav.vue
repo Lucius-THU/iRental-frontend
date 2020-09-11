@@ -57,7 +57,7 @@
                         <b-input-group-prepend is-text>
                             <b-icon icon="gear-wide-connected"></b-icon>
                         </b-input-group-prepend>
-                        <b-form-select id="auth-input" v-model="group" :options="options" :disabled="group !== 'admin'"></b-form-select>
+                        <b-form-select id="auth-input" v-model="group" :options="options" disabled></b-form-select>
                     </b-input-group>
                 </b-form-group>
             </b-form>
