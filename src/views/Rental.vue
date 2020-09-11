@@ -56,8 +56,8 @@
                         <p>申请理由：{{ req_info.purpose }}</p>
                         <p>计划归还时间：{{ req_info.expired_at }}</p>
                         <p>状态：{{ req_info.status }}</p>
-                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id === req_info.user_id) && req_info.status === '待处理'" class="mt-3" block variant="success" @click="update(true)">同意</b-button>
-                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id === req_info.user_id) && req_info.status === '待处理'" class="mt-3" block variant="warning" @click="update(false)">拒绝</b-button>
+                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理'" class="mt-3" block variant="success" @click="update(true)">同意</b-button>
+                        <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理'" class="mt-3" block variant="warning" @click="update(false)">拒绝</b-button>
                         <b-button v-if="$store.state.group === 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
                         <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
                     </b-modal>
