@@ -74,7 +74,8 @@ export default {
                 },
                 {
                     key: 'address',
-                    label: '设备地址'
+                    label: '设备地址',
+                    sortable: true
                 },
                 {
                     key: 'status',

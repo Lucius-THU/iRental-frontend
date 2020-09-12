@@ -39,10 +39,18 @@
                         <b-icon icon="gear-wide-connected"></b-icon>
                     </b-input-group-prepend>
                     <b-form-select id="auth-input" v-model="info.group" :options="options" :disabled="$store.state.group !== 'admin' || info.group === 'admin'"></b-form-select>
+                    <b-input-group-append v-if="group !== 'admin'">
+                        <b-button variant="outline-primary" @click="create">申请成为提供者</b-button>
+                    </b-input-group-append>
                 </b-input-group>
             </b-form-group>
             <b-button v-if="$store.state.group === 'admin' && info.group !== 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
         </b-form>
+        <b-modal ref="request-info" title="申请详情" @ok="handle2Submit">
+            <b-form-group label="请填写申请信息" label-for="info-input">
+                <b-form-textarea id="info-input" v-model="text" placeholder="请填写申请信息（如您所属的实验室等）……" rows="6" no-resize></b-form-textarea>
+            </b-form-group>
+        </b-modal>
     </b-modal>
 </template>
 
@@ -52,6 +60,7 @@ export default {
     props: ['info'],
     data(){
         return {
+            text: '',
             group: this.$store.state.group,
             name: this.$store.state.username,
             email: this.$store.state.email,
@@ -79,6 +88,18 @@ export default {
             this.axios.post('api/users/' + this.info.id + '/delete').then(() => {
                 this.$refs['person-info'].hide()
                 this.$emit('reload')
+            })
+        },
+        create(){
+            this.text = ''
+            this.$refs['request-info'].show()
+        },
+        handle2Submit(){
+            this.axios.post('/api/requests/provider/create', {
+                user_id: this.$store.state.user_id,
+                info: this.text
+            }).catch(error => {
+                if(error.response.status === 403) this.$router.push('/login')
             })
         }
     }

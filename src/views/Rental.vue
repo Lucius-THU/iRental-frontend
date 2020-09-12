@@ -4,7 +4,7 @@
         <div class="overflow-auto">
             <b-tabs content-class="mt-3" pills card>
                 <b-tab title="当前租借" lazy @click.once="getloads">
-                    <b-table id="my-table2" :items="items2" :per-page="perPage2" :current-page="currentPage2" :fields="fields2" :busy="isBusy">
+                    <b-table id="my-table2" :items="items2" :per-page="perPage2" :current-page="currentPage2" :fields="fields2" :busy="isBusy2">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
@@ -30,8 +30,8 @@
                         <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
-                <b-tab title="向我申请" lazy @click.once="getloads3" :disabled="$store.state.group === 'user'">
-                    <b-table id="my-table3" :items="items3" :per-page="perPage3" :current-page="currentPage3" :fields="fields3" :busy="isBusy2" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
+                <b-tab title="我的审核" lazy @click.once="getloads3" :disabled="$store.state.group === 'user'">
+                    <b-table id="my-table3" :items="items3" :per-page="perPage3" :current-page="currentPage3" :fields="fields3" :busy="isBusy3" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
@@ -105,6 +105,7 @@ export default {
             items3: [],
             isBusy: false,
             isBusy2: false,
+            isBusy3: false,
             sortBy: 'status',
             sortAsc: true,
             req_info: {},
@@ -223,8 +224,8 @@ export default {
         this.load()
     },
     methods: {
-        async load(flag=true){
-            this.isBusy = flag
+        async load(){
+            this.isBusy = true
             let items = await this.axios.get('/api/requests/rental/').then(response => {
                 this.rows = response.data.total
                 return response.data.list
@@ -236,7 +237,7 @@ export default {
                 items[i]['username'] = items[i].user.name === '' ? items[i].user.email: items[i].user.name
             }
             this.items = items
-            this.isBusy = !flag
+            this.isBusy = false
         },
         status(approved, rejected){
             if(approved === false && rejected === true) return '已拒绝'
@@ -286,11 +287,10 @@ export default {
             this.axios.post('/api/equipment/' + this.equip_info.id + '/return').then(() => {
                 this.$refs['equip-info'].hide()
                 this.getloads()
-                this.load(false)
             })
         },
         async getloads(){
-            this.isBusy = true
+            this.isBusy2 = true
             let items = await this.axios.get('/api/equipment/', {
                 params: {
                     user_id: this.$store.state.user_id
@@ -303,10 +303,10 @@ export default {
                 items[i]['username'] = items[i].provider.name === '' ? items[i].provider.email: items[i].provider.name
             }
             this.items2 = items
-            this.isBusy = false
+            this.isBusy2 = false
         },
         async getloads3(){
-            this.isBusy2 = true
+            this.isBusy3 = true
             let items = await this.axios.get('/api/requests/rental/', {
                 params: {
                     provided: 1
@@ -321,7 +321,7 @@ export default {
                 items[i]['equipment_name'] = items[i].equipment.name
             }
             this.items3 = items
-            this.isBusy2 = false
+            this.isBusy3 = false
         }
     }
 }

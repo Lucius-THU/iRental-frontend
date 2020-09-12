@@ -39,6 +39,9 @@
                     <b-button size="sm" @click="info(data.item)" class="mr-1" variant="outline-primary">
                         详情
                     </b-button>
+                    <b-button size="sm" @click="load_data(data.item)" v-b-modal.modal-xl class="mr-1" variant="outline-primary">
+                        历史记录
+                    </b-button>
                 </template>
             </b-table>
             <b-pagination align="center" v-model="currentPage" :total-rows="rows" :per-page="perPage" aria-controls="my-table" pills></b-pagination>
@@ -69,6 +72,17 @@
             </b-form>
         </b-modal>
         <Equipment ref="equipment" :equip_info="equip_info" @reload="load"></Equipment>
+        <b-modal id="modal-xl" size="xl" title="历史记录" ok-only>
+            <b-table id="my-table2" :items="items2" :per-page="perPage2" :current-page="currentPage2" :fields="fields2" :busy="isBusy2" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
+                <template v-slot:table-busy>
+                    <div class="text-center text-primary my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong>Loading...</strong>
+                    </div>
+                </template>
+            </b-table>
+            <b-pagination align="center" v-model="currentPage2" :total-rows="rows2" :per-page="perPage2" aria-controls="my-table2" pills></b-pagination>
+        </b-modal>
     </div>
 </template>
 
@@ -89,12 +103,19 @@ export default {
             currentPage: 1,
             rows: 0,
             perPage: 10,
+            currentPage2: 1,
+            rows2: 0,
+            perPage2: 10,
             new_equip_name: '',
             new_equip_addr: '',
             new_equip_date: '',
             new_equip_time: '',
+            sortBy: 'id',
+            sortDesc: true,
             items: [],
+            items2: [],
             isBusy: true,
+            isBusy2: true,
             equip_info: {},
             seen: false,
             fields: [
@@ -129,6 +150,42 @@ export default {
                     label: '操作'
                 }
             ],
+            fields2: [
+                {
+                    key: 'id',
+                    label: '租借编号',
+                    sortable: true
+                },
+                {
+                    key: 'user_id',
+                    label: '用户编号',
+                    sortable: true
+                },
+                {
+                    key: 'username',
+                    label: '用户名',
+                    sortale: true
+                },
+                {
+                    key: 'email',
+                    label: '邮箱',
+                    sortable: true
+                },
+                {
+                    key: 'contact',
+                    label: '联系电话',
+                    sortable: true
+                },
+                {
+                    key: 'returned',
+                    label: '状态',
+                    sortable: true,
+                    formatter: (value) => {
+                        return value ? '已归还': '未归还'
+                    },
+                    sortByFormatted: true,
+                }
+            ]
         }
     },
     methods: {
@@ -188,6 +245,25 @@ export default {
             } else {
                 this.seen = true
             }
+        },
+        async load_data(item){
+            this.isBusy2 = true
+            this.perPage2 = 10
+            this.currentPage2 = 1
+            await this.axios.get('/api/records/', {
+                params: {
+                    equipment_id: item.id
+                }
+            }).then(response => {
+                this.rows2 = response.data.list.length
+                this.items2 = response.data.list
+            })
+            for(let i = 0; i < this.rows2; i++){
+                this.items2[i].username = this.items2[i].user.name
+                this.items2[i].email = this.items2[i].user.email
+                this.items2[i].contact = this.items2[i].user.contact
+            }
+            this.isBusy2 = false
         }
     }
 }
