@@ -30,7 +30,7 @@
                         <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
-                <b-tab title="租借记录" active>
+                <b-tab title="我的申请" active>
                     <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
@@ -85,17 +85,7 @@ export default {
             isBusy: false,
             sortBy: 'status',
             sortAsc: true,
-            req_info: {
-                id: 0,
-                user_id: 0,
-                equip_id: 0,
-                equip_name: '',
-                username: '',
-                purpose: '',
-                expired_at: '',
-                status: '',
-                canedit: true
-            },
+            req_info: {},
             equip_info: {
                 id: 0,
                 provider_name: '',
@@ -178,22 +168,9 @@ export default {
                 return response.data.list
             })
             for(let i = 0; i < this.rows; i++){
-                await this.axios.get('/api/users/' + items[i]['user_id']).then(response => {
-                    items[i]['username'] = response.data.name === '' ? response.data.email: response.data.name
-                })
-                await this.axios.get('/api/equipment/', {
-                    params: {
-                        id: items[i]['equipment_id']
-                    }
-                }).then(response => {
-                    if(response.data.list.length === 0){
-                        items[i]['equipment_name'] = '已下架'
-                        items[i]['canedit'] = false
-                    } else {
-                        items[i]['equipment_name'] = response.data.list[0].name
-                        items[i]['canedit'] = (items[i]['user_id'] !== null)
-                    }
-                })
+                items[i]['canedit'] = items[i].equipment.user_id === null
+                items[i]['username'] = items[i].user.name === '' ? items[i].user.email: items[i].user.name
+                items[i]['equipment_name'] = items[i].equipment.name
             }
             this.items = items
             this.isBusy = false
@@ -204,15 +181,17 @@ export default {
             return '待处理'
         },
         info(item){
-            this.req_info.id = item.id
-            this.req_info.user_id = item.user_id
-            this.req_info.username = item.username
-            this.req_info.equip_id = item.equipment_id
-            this.req_info.equip_name = item.equipment_name
-            this.req_info.purpose = item.purpose
-            this.req_info.expired_at = format(item.rent_until)
-            this.req_info.status = this.status(item.approved, item.rejected)
-            this.req_info.canedit = item.canedit
+            this.req_info = {
+                id: item.id,
+                user_id: item.user_id,
+                username: item.username,
+                equip_id: item.equipment_id,
+                equip_name: item.equipment_name,
+                purpose: item.purpose,
+                expired_at: format(item.rent_until),
+                status: this.status(item.approved, item.rejected),
+                canedit: item.canedit
+            }
             this.$refs['request-info'].show()
         },
         info2(item){

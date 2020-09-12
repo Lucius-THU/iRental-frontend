@@ -4,11 +4,12 @@
             <p>设备编号：{{ equip_info.equip_id }}</p>
             <p>设备名：{{ equip_info.name }}</p>
             <p>设备地址：{{ equip_info.address }}</p>
-            <p>提供者：{{ equip_info.provider_name }}</p>
-            <p>联系方式：{{ equip_info.contact }}</p>
+            <p>提供者：{{ equip_info.provider_name === '' ? equip_info.email: equip_info.provider_name }}</p>
+            <p v-if="equip_info.provider_name !== ''">提供者邮箱：{{ equip_info.email }}</p>
+            <p>联系电话：{{ equip_info.contact }}</p>
             <p>上架状态：{{ equip_info.launched ? '已上架': '未上架'}}</p>
             <p v-if="equip_info.launched">借出状态：{{ equip_info.used ? '已借出': '未借出' }}</p>
-            <p v-if="equip_info.launched">预计归还时间：{{ equip_info.rent_until }}</p>
+            <p v-if="equip_info.used">预计归还时间：{{ equip_info.rent_until }}</p>
             <p v-if="!equip_info.launched">申请情况：{{ equip_info.requesting ? '正在申请上架': '未申请上架' }}</p>
             <p>计划下架时间：{{ equip_info.expire_at }}</p>
             <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">上架</b-button>
@@ -60,24 +61,13 @@
 <script>
 export default {
     name: 'Equipment',
+    props: ['equip_info'],
     data(){
         return {
             equip_name: '',
             equip_addr: '',
             equip_date: '',
             equip_time: '',
-            equip_info: {
-                address: '',
-                contact: '',
-                equip_id: 0,
-                launched: false,
-                used: false,
-                name: '',
-                requesting: false,
-                provider_name: '',
-                provider_id: 0,
-                rent_until: ''
-            },
             purpose: '',
             expire_date: '',
             expire_time: '',
@@ -99,31 +89,31 @@ export default {
                 expire_at: this.equip_date + 'T' + this.equip_time + '+08:00'
             }).then(() => {
                 this.$refs['equip-info'].hide()
-                this.load()
+                this.$emit('reload')
             })
         },
         del(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/delete').then(() => {
                 this.$refs['equip-info'].hide()
-                this.load()
+                this.$emit('reload')
             })
         },
         launch(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/launch').then(() => {
                 this.$refs['equip-info'].hide()
-                this.load()
+                this.$emit('reload')
             })
         },
         discontinue(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/discontinue').then(() => {
                 this.$refs['equip-info'].hide()
-                this.load()
+                this.$emit('reload')
             })
         },
         request(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/request').then(() => {
                 this.$refs['equip-info'].hide()
-                this.load()
+                this.$emit('reload')
             })
         },
         requests(){
