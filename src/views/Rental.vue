@@ -60,7 +60,7 @@
                         <b-button class="mt-3" block @click="$bvModal.hide('request-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
-                <b-tab title="向我申请" lazy @click.once="getloads3">
+                <b-tab title="向我申请" lazy @click.once="getloads3" :disabled="$store.state.group === 'user'">
                     <b-table id="my-table3" :items="items3" :per-page="perPage3" :current-page="currentPage3" :fields="fields3" :busy="isBusy" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
@@ -218,8 +218,8 @@ export default {
         this.load()
     },
     methods: {
-        async load(){
-            this.isBusy = true
+        async load(flag=true){
+            this.isBusy = flag
             let items = await this.axios.get('/api/requests/rental').then(response => {
                 this.rows = response.data.total
                 return response.data.list
@@ -230,7 +230,7 @@ export default {
                 items[i]['equipment_name'] = items[i].equipment.name
             }
             this.items = items
-            this.isBusy = false
+            this.isBusy = !flag
         },
         status(approved, rejected){
             if(approved === false && rejected === true) return '已拒绝'
@@ -278,6 +278,7 @@ export default {
             this.axios.post('/api/equipment/' + this.equip_info.id + '/terminate').then(() => {
                 this.$refs['equip-info'].hide()
                 this.getloads()
+                this.load(false)
             })
         },
         async getloads(){

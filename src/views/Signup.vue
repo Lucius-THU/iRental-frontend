@@ -27,6 +27,15 @@
                     <b-form-input id="input-3" v-model="password2" type="password" :state="pwd2State"></b-form-input>
                 </b-input-group>
             </b-form-group>
+            <b-form-group label="验证码" label-for="input-4"  invalid-feedback="验证码错误" :state="tokenState">
+                <b-input-group>
+                    <b-form-input id="input-4" v-model="token"></b-form-input>
+                    <b-input-group-append>
+                        <b-button variant="outline-primary" @click="change" :disabled="seen">向邮箱发送</b-button>
+                    </b-input-group-append>
+                </b-input-group>
+                <b-form-text v-if="seen">两分钟后可再次发送</b-form-text>
+            </b-form-group>
             <b-button variant="outline-primary" id="signup-btn" @click.prevent="signup">注册</b-button>
         </b-form>
     </div>
@@ -40,7 +49,11 @@ export default {
             email: '',
             password: '',
             password2: '',
-            onceTry: false
+            token: '',
+            onceTry: false,
+            tokenState: true,
+            timer: null,
+            seen: false,
         }
     },
     computed: {
@@ -74,10 +87,37 @@ export default {
             if(this.state){
                 this.axios.post('/api/signup', {
                     email: this.email,
-                    password: this.password
-                }).then(() => {
-                    this.$router.push('/login')
+                    password: this.password,
+                    token: this.token
+                }).then(response => {
+                    if(response.data.error === 'invalid token'){
+                        this.tokenState = false
+                    } else {
+                        if(this.timer !== null) clearInterval(this.timer);
+                        this.timer = null;
+                        this.$router.push('/login')
+                    }
                 })
+            }
+        },
+        change(evt){
+            this.axios.post('/api/signup', {
+                    email: this.email,
+                    password: this.password
+            })
+            evt.target.innerText = '再次发送'
+            this.seen = true
+            if(!this.timer){
+                this.count = 120;
+                this.timer = setInterval(() => {
+                    if(this.count > 0){
+                        this.count--;
+                    } else {
+                        clearInterval(this.timer);
+                        this.timer = null;
+                        this.seen = false;
+                    }
+                }, 1000)
             }
         }
     }
