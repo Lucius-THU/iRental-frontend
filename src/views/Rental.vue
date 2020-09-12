@@ -3,7 +3,7 @@
         <Nav></Nav>
         <div class="overflow-auto">
             <b-tabs content-class="mt-3" pills card>
-                <b-tab title="当前租借" lazy @click="getloads">
+                <b-tab title="当前租借" lazy @click.once="getloads">
                     <b-table id="my-table2" :items="items2" :per-page="perPage2" :current-page="currentPage2" :fields="fields2" :busy="isBusy">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
@@ -39,7 +39,7 @@
                             </div>
                         </template>
                         <template v-slot:cell(actions)="data">
-                            <b-button size="sm" @click="info(data.item)" class="mr-1" variant="outline-primary">
+                            <b-button size="sm" @click="info(data.item, true)" class="mr-1" variant="outline-primary">
                                 详情
                             </b-button>
                         </template>
@@ -49,7 +49,8 @@
                         <p>申请编号：{{ req_info.id }}</p>
                         <p>设备编号：{{ req_info.equip_id }}</p>
                         <p>设备名：{{ req_info.equip_name }}</p>
-                        <p>申请者：{{ req_info.username }}</p>
+                        <p v-if="!flag">申请者：{{ req_info.username }}</p>
+                        <p v-if="flag">提供者：{{ req_info.provider_name }}</p>
                         <p>申请理由：{{ req_info.purpose }}</p>
                         <p>计划归还时间：{{ req_info.expired_at }}</p>
                         <p>状态：{{ req_info.status }}</p>
@@ -58,6 +59,22 @@
                         <b-button v-if="$store.state.group === 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
                         <b-button class="mt-3" block @click="$bvModal.hide('request-info')">关闭</b-button>
                     </b-modal>
+                </b-tab>
+                <b-tab title="向我申请" lazy @click.once="getloads3">
+                    <b-table id="my-table3" :items="items3" :per-page="perPage3" :current-page="currentPage3" :fields="fields3" :busy="isBusy" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
+                        <template v-slot:table-busy>
+                            <div class="text-center text-primary my-2">
+                                <b-spinner class="align-middle"></b-spinner>
+                                <strong>Loading...</strong>
+                            </div>
+                        </template>
+                        <template v-slot:cell(actions)="data">
+                            <b-button size="sm" @click="info(data.item, false)" class="mr-1" variant="outline-primary">
+                                详情
+                            </b-button>
+                        </template>
+                    </b-table>
+                    <b-pagination align="center" v-model="currentPage3" :total-rows="rows3" :per-page="perPage3" aria-controls="my-table3" pills></b-pagination>
                 </b-tab>
             </b-tabs>
         </div>
@@ -80,12 +97,17 @@ export default {
             currentPage2: 1,
             rows2: 0,
             perPage2: 10,
+            currentPage3: 1,
+            rows3: 0,
+            perPage3: 10,
             items: [],
             items2: [],
+            items3: [],
             isBusy: false,
             sortBy: 'status',
             sortAsc: true,
             req_info: {},
+            flag: true,
             equip_info: {
                 id: 0,
                 provider_name: '',
@@ -99,10 +121,6 @@ export default {
                     sortable: true
                 },
                 {
-                    key: 'username',
-                    label: '申请者'
-                },
-                {
                     key: 'equipment_id',
                     label: '设备编号',
                     sortable: true
@@ -110,6 +128,10 @@ export default {
                 {
                     key: 'equipment_name',
                     label: '设备名'
+                },
+                {
+                    key: 'provider_name',
+                    label: '提供者'
                 },
                 {
                     key: 'status',
@@ -154,7 +176,42 @@ export default {
                     key: 'actions',
                     label: '操作'
                 }
-            ]
+            ],
+            fields3: [
+                {
+                    key: 'id',
+                    label: '申请编号',
+                    sortable: true
+                },
+                {
+                    key: 'equipment_id',
+                    label: '设备编号',
+                    sortable: true
+                },
+                {
+                    key: 'equipment_name',
+                    label: '设备名'
+                },
+                {
+                    key: 'username',
+                    label: '申请者'
+                },
+                {
+                    key: 'status',
+                    label: '状态',
+                    sortable: true,
+                    formatter: (value, key, item) => {
+                        if(item.approved === false && item.rejected === true) return '已拒绝'
+                        if(item.approved === true) return '已同意'
+                        return '待处理'
+                    },
+                    sortByFormatted: true,
+                },
+                {
+                    key: 'actions',
+                    label: '操作'
+                }
+            ],
         }
     },
     created(){
@@ -169,7 +226,7 @@ export default {
             })
             for(let i = 0; i < this.rows; i++){
                 items[i]['canedit'] = items[i].equipment.user_id === null
-                items[i]['username'] = items[i].user.name === '' ? items[i].user.email: items[i].user.name
+                items[i]['provider_name'] = items[i].equipment.provider.name === '' ? items[i].equipment.provider.email: items[i].equipment.provider.name
                 items[i]['equipment_name'] = items[i].equipment.name
             }
             this.items = items
@@ -180,10 +237,12 @@ export default {
             if(approved === true) return '已同意'
             return '待处理'
         },
-        info(item){
+        info(item, flag){
+            this.flag = flag
             this.req_info = {
                 id: item.id,
                 user_id: item.user_id,
+                provider_name: item.provider_name,
                 username: item.username,
                 equip_id: item.equipment_id,
                 equip_name: item.equipment_name,
@@ -237,6 +296,22 @@ export default {
                 })
             }
             this.items2 = items
+            this.isBusy = false
+        },
+        async getloads2(){
+            this.isBusy = true
+            let items = await this.axios.get('/api/requests/rental', {
+                provided: 1
+            }).then(response => {
+                this.rows3 = response.data.total
+                return response.data.list
+            })
+            for(let i = 0; i < this.rows; i++){
+                items[i]['canedit'] = items[i].equipment.user_id === null
+                items[i]['username'] = items[i].user.name === '' ? items[i].user.email: items[i].user.name
+                items[i]['equipment_name'] = items[i].equipment.name
+            }
+            this.items3 = items
             this.isBusy = false
         }
     }
