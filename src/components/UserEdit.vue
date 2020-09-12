@@ -58,7 +58,7 @@ export default {
             address: this.$store.state.address,
             contact: this.$store.state.contact,
             options: [
-                { value: 'admin', text: '管理员' },
+                { value: 'admin', text: '管理员', disabled: true },
                 { value: 'provider', text: '设备提供者' },
                 { value: 'user', text: '普通用户' }
             ]
