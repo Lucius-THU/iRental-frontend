@@ -21,7 +21,7 @@
                         </template>
                     </b-table>
                     <b-pagination align="center" v-model="currentPage" :total-rows="rows2" :per-page="perPage2" aria-controls="my-table2" pills></b-pagination>
-                    <b-modal ref="equip-info" title="租借详情" hide-footer>
+                    <b-modal id="equip-info" ref="equip-info" title="租借详情" hide-footer>
                         <p>设备编号：{{ equip_info.id }}</p>
                         <p>设备名：{{ equip_info.name }}</p>
                         <p>提供者：{{ equip_info.provider_name }}</p>
@@ -45,7 +45,7 @@
                         </template>
                     </b-table>
                     <b-pagination align="center" v-model="currentPage" :total-rows="rows" :per-page="perPage" aria-controls="my-table" pills></b-pagination>
-                    <b-modal ref="request-info" title="申请详情" hide-footer>
+                    <b-modal id="request-info" ref="request-info" title="申请详情" hide-footer>
                         <p>申请编号：{{ req_info.id }}</p>
                         <p>设备编号：{{ req_info.equip_id }}</p>
                         <p>设备名：{{ req_info.equip_name }}</p>
@@ -55,8 +55,8 @@
                         <p>状态：{{ req_info.status }}</p>
                         <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理' && req_info.canedit" class="mt-3" block variant="success" @click="update(true)">同意</b-button>
                         <b-button v-if="($store.state.group === 'admin' || $store.state.user_id !== req_info.user_id) && req_info.status === '待处理'  && req_info.canedit" class="mt-3" block variant="warning" @click="update(false)">拒绝</b-button>
-                        <b-button v-if="$store.state.group === 'admin' && req_info.canedit" class="mt-3" block variant="danger" @click="del">删除</b-button>
-                        <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
+                        <b-button v-if="$store.state.group === 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
+                        <b-button class="mt-3" block @click="$bvModal.hide('request-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
             </b-tabs>
@@ -191,8 +191,8 @@ export default {
                         items[i]['canedit'] = false
                     } else {
                         items[i]['equipment_name'] = response.data.list[0].name
-                        items[i]['canedit'] = !(items[i]['user_id'] !== null)
-                    } 
+                        items[i]['canedit'] = (items[i]['user_id'] !== null)
+                    }
                 })
             }
             this.items = items

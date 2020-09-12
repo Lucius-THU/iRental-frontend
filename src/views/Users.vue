@@ -1,6 +1,6 @@
 <template>
     <div class="users">
-        <Nav @getContent="load"></Nav>
+        <Nav ref="nav" @getContent="load"></Nav>
         <div class="overflow-auto">
             <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy">
                 <template v-slot:table-busy>
@@ -20,60 +20,18 @@
             </b-table>
             <b-pagination align="center" v-model="currentPage" :total-rows="rows" :per-page="perPage" aria-controls="my-table" pills></b-pagination>
         </div>
-        <b-modal ref="person-info" title="用户信息" @ok="handleSubmit">
-            <b-form ref="form" @submit.stop.prevent="handleSubmit">
-                <b-form-group label="用户名" label-for="name-input">
-                    <b-input-group>
-                        <b-input-group-prepend is-text>
-                            <b-icon icon="person-circle"></b-icon>
-                        </b-input-group-prepend>
-                        <b-form-input id="name-input" v-model="name"></b-form-input>
-                    </b-input-group>
-                </b-form-group>
-                <b-form-group label="地址" label-for="address-input">
-                    <b-input-group>
-                        <b-input-group-prepend is-text>
-                            <b-icon icon="house-door-fill"></b-icon>
-                        </b-input-group-prepend>
-                        <b-form-input id="address-input" v-model="address"></b-form-input>
-                    </b-input-group>
-                </b-form-group>
-                <b-form-group label="邮箱" label-for="email-input">
-                    <b-input-group>
-                        <b-input-group-prepend is-text>
-                            <b-icon icon="envelope-fill"></b-icon>
-                        </b-input-group-prepend>
-                        <b-form-input id="email-input" v-model="email" disabled></b-form-input>
-                    </b-input-group>
-                </b-form-group>
-                <b-form-group label="联系电话" label-for="contact-input">
-                    <b-input-group>
-                        <b-input-group-prepend is-text>
-                            <b-icon icon="phone-fill"></b-icon>
-                        </b-input-group-prepend>
-                        <b-form-input id="contact-input" v-model="contact" type="tel"></b-form-input>
-                    </b-input-group>
-                </b-form-group>
-                <b-form-group label="权限" label-for="auth-input">
-                    <b-input-group>
-                        <b-input-group-prepend is-text>
-                            <b-icon icon="gear-wide-connected"></b-icon>
-                        </b-input-group-prepend>
-                        <b-form-select id="auth-input" v-model="group" :options="options" :disabled="group === 'admin'"></b-form-select>
-                    </b-input-group>
-                </b-form-group>
-                <b-button v-if="group !== 'admin'" class="mt-3" block variant="danger" @click="del">删除</b-button>
-            </b-form>
-        </b-modal>
+        <UserEdit ref="user-edit" @reload="load" :info="info"></UserEdit>
     </div>
 </template>
 
 <script>
 import Nav from '../components/Nav.vue'
+import UserEdit from '../components/UserEdit.vue'
 export default {
     name: 'Users',
     components: {
-        Nav
+        Nav,
+        UserEdit
     },
     data(){
         return {
@@ -81,12 +39,14 @@ export default {
             rows: 0,
             perPage: 10,
             items: [],
+            info: {},
             group: '',
             name: '',
             address: '',
             contact: '',
             email: '',
             isBusy: false,
+            flag: false,
             fields: [
                 {
                     key: 'id',
@@ -131,6 +91,8 @@ export default {
     },
     methods: {
         async load(){
+            if(this.flag) this.$refs['nav'].load()
+            this.flag = false
             this.isBusy = true
             await this.axios.get('/api/users/').then(response => {
                 this.rows = response.data.list.length
@@ -139,34 +101,21 @@ export default {
             this.isBusy = false
         },
         edit(item){
-            this.name = item.name
-            this.address = item.address
-            this.contact = item.contact
-            this.email = item.email
-            this.group = item.group
-            this.id = item.id
-            this.$refs['person-info'].show()
-        },
-        handleSubmit(){
-            this.axios.post('/api/users/' + this.id + '/update', {
-                name: this.name,
-                address: this.address,
-                contact: this.contact,
-                group: this.group
-            }).then(() => {
-                this.load()
-            })
+            this.info = {
+                group: item.group,
+                name: item.name,
+                address: item.address,
+                contact: item.contact,
+                email: item.email,
+                id: item.id
+            }
+            if(item.id === this.$store.state.user_id) this.flag = true
+            this.$refs['user-edit'].$refs['person-info'].show()
         },
         status(value){
             if(value === 'admin') return '管理员'
             if(value === 'provider') return '设备提供者'
             return '普通用户'
-        },
-        del(){
-            this.axios.post('api/users/' + this.id + '/delete').then(() => {
-                this.$refs['person-info'].hide()
-                this.load()
-            })
         }
     }
 }
