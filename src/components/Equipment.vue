@@ -44,6 +44,8 @@
                     <b-form-datepicker v-model="equip_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
                     <b-form-timepicker v-model="equip_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
                 </b-form-group>
+                <b-form-text v-if="seen" style="color: red !important;">请完整填写归还时间！</b-form-text>
+                <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>
             </b-form>
         </b-modal>
         <b-modal ref="request-info" title="申请租借" @ok='handle2Submit'>
@@ -54,8 +56,9 @@
                 <b-form-group label="归还时间" label-for="email-input">
                     <b-form-datepicker v-model="expire_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
                     <b-form-timepicker v-model="expire_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
-                    <b-form-text v-if="seen" style="color: red !important;">请完整填写归还时间！</b-form-text>
                 </b-form-group>
+                <b-form-text v-if="seen" style="color: red !important;">请完整填写归还时间！</b-form-text>
+                <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>
             </b-form>
         </b-modal>
     </div>
@@ -67,6 +70,7 @@ export default {
     props: ['equip_info'],
     data(){
         return {
+            timeflag: false,
             equip_name: '',
             equip_addr: '',
             equip_date: '',
@@ -79,6 +83,8 @@ export default {
     },
     methods: {
         update(){
+            this.seen = false
+            this.timeflag = false
             this.equip_name = this.equip_info.name
             this.equip_addr = this.equip_info.address
             let time = this.equip_info.expire_at.split(' ')
@@ -86,15 +92,29 @@ export default {
             this.equip_time = time[1]
             this.$refs['update-equipment'].show()
         },
-        handleSubmit(){
-            this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/update', {
-                name: this.equip_name,
-                address: this.equip_addr,
-                expire_at: this.equip_date + 'T' + this.equip_time + '+08:00'
-            }).then(() => {
-                this.$refs['equip-info'].hide()
-                this.$emit('reload', this.$store.state.user_id)
-            })
+        handleSubmit(event){
+            event.preventDefault()
+            if(this.equip_name !== '' && this.equip_addr !== '' && this.equip_date !== '' && this.equip_time !== ''){
+                this.seen = false
+                let t = new Date(this.equip_date + 'T' + this.equip_time + '+08:00')
+                let now = new Date()
+                if(t < now){
+                    this.timeflag = true
+                } else {
+                    this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/update', {
+                        name: this.equip_name,
+                        address: this.equip_addr,
+                        expire_at: this.equip_date + 'T' + this.equip_time + '+08:00'
+                    }).then(() => {
+                        this.$refs['equip-info'].hide()
+                        this.$refs['update-equipment'].hide()
+                        this.$emit('reload', this.$store.state.user_id)
+                    })
+                }
+            } else {
+                this.seen = true
+                this.timeflag = false
+            }
         },
         del(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/delete').then(() => {
@@ -127,21 +147,30 @@ export default {
             this.expire_time = ''
             this.purpose = ''
             this.seen = false
+            this.timeflag = false
             this.$refs['request-info'].show()
         },
         handle2Submit(event){
             event.preventDefault()
             if(this.expire_date !== '' && this.expire_date !== ''){
-                this.axios.post('/api/requests/rental/create', {
-                    equipment_id: this.equip_info.equip_id,
-                    purpose: this.purpose,
-                    rent_until: this.expire_date + 'T' + this.expire_time + '+08:00'
-                }).then(() => {
-                    this.$refs['request-info'].hide()
-                    this.$refs['equip-info'].hide()
-                })
+                this.seen = false
+                let t = new Date(this.expire_date + 'T' + this.expire_time + '+08:00')
+                let now = new Date()
+                if(t < now){
+                    this.timeflag = true
+                } else {
+                    this.axios.post('/api/requests/rental/create', {
+                        equipment_id: this.equip_info.equip_id,
+                        purpose: this.purpose,
+                        rent_until: this.expire_date + 'T' + this.expire_time + '+08:00'
+                    }).then(() => {
+                        this.$refs['request-info'].hide()
+                        this.$refs['equip-info'].hide()
+                    })
+                }
             } else {
                 this.seen = true
+                this.timeflag = false
             }
         },
         terminate(){

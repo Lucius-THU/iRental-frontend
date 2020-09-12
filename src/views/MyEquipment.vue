@@ -69,6 +69,7 @@
                     <b-form-timepicker v-model="new_equip_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
                 </b-form-group>
                 <b-form-text v-if="seen" style="color: red !important;">请完整填写设备信息！</b-form-text>
+                <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>
             </b-form>
         </b-modal>
         <Equipment ref="equipment" :equip_info="equip_info" @reload="load"></Equipment>
@@ -98,6 +99,7 @@ export default {
     },
     data(){
         return {
+            timeflag: false,
             filter: '',
             filterOn: [],
             currentPage: 1,
@@ -246,16 +248,24 @@ export default {
         handleSubmit(event){
             event.preventDefault()
             if(this.new_equip_name !== '' && this.new_equip_addr !== '' && this.new_equip_date !== '' && this.new_equip_time !== ''){
-                this.axios.post('/api/equipment/create', {
-                    name: this.new_equip_name,
-                    address: this.new_equip_addr,
-                    expire_at: this.new_equip_date + 'T' + this.new_equip_time + '+08:00'
-                }).then(() => {
-                    this.load(this.$store.state.user_id)
-                    this.$refs['create-equipment'].hide()
-                })
+                this.seen = false
+                let t = new Date(this.new_equip_date + 'T' + this.new_equip_time + '+08:00')
+                let now = new Date()
+                if(t < now){
+                    this.timeflag = true
+                } else {
+                    this.axios.post('/api/equipment/create', {
+                        name: this.new_equip_name,
+                        address: this.new_equip_addr,
+                        expire_at: this.new_equip_date + 'T' + this.new_equip_time + '+08:00'
+                    }).then(() => {
+                        this.load(this.$store.state.user_id)
+                        this.$refs['create-equipment'].hide()
+                    })
+                }
             } else {
                 this.seen = true
+                this.timeflag = false
             }
         },
         async load_data(item){
