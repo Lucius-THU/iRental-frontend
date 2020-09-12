@@ -137,6 +137,7 @@ export default {
                     rent_until: this.expire_date + 'T' + this.expire_time + '+08:00'
                 }).then(() => {
                     this.$refs['request-info'].hide()
+                    this.$refs['equip-info'].hide()
                 })
             } else {
                 this.seen = true

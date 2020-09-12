@@ -65,8 +65,8 @@
                         <p>申请编号：{{ req_info.id }}</p>
                         <p>设备编号：{{ req_info.equip_id }}</p>
                         <p>设备名：{{ req_info.equip_name }}</p>
-                        <p v-if="!flag">申请者：{{ req_info.username }}</p>
                         <p v-if="flag">提供者：{{ req_info.provider_name }}</p>
+                        <p>申请者：{{ req_info.username }}</p>
                         <p>申请理由：{{ req_info.purpose }}</p>
                         <p>计划归还时间：{{ req_info.expired_at }}</p>
                         <p>状态：{{ req_info.status }}</p>
@@ -133,6 +133,10 @@ export default {
                 {
                     key: 'provider_name',
                     label: '提供者'
+                },
+                {
+                    key: 'username',
+                    label: '申请者'
                 },
                 {
                     key: 'status',
@@ -229,6 +233,7 @@ export default {
                 items[i]['canedit'] = items[i].equipment.user_id === null
                 items[i]['provider_name'] = items[i].equipment.provider.name === '' ? items[i].equipment.provider.email: items[i].equipment.provider.name
                 items[i]['equipment_name'] = items[i].equipment.name
+                items[i]['username'] = items[i].user.name === '' ? items[i].user.email: items[i].user.name
             }
             this.items = items
             this.isBusy = !flag
@@ -295,9 +300,7 @@ export default {
                 return response.data.list
             })
             for(let i = 0; i < this.rows2; i++){
-                await this.axios.get('/api/users/' + items[i]['provider_id']).then(response => {
-                    items[i]['username'] = response.data.name === '' ? response.data.email: response.data.name
-                })
+                items[i]['username'] = items[i].provider.name === '' ? items[i].provider.email: items[i].provider.name
             }
             this.items2 = items
             this.isBusy = false
