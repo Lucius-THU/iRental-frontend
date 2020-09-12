@@ -11,13 +11,13 @@
             <b-navbar-nav class="ml-auto">
                 <b-nav-item-dropdown right>
                     <template v-slot:button-content>
-                        <b-icon icon="bell-fill" class="rounded-circle bg-danger p-2" scale="3" variant="light" v-if="notifications.length > 0"></b-icon>
+                        <b-icon icon="bell-fill" class="rounded-circle bg-primary p-2" scale="3" variant="light" v-if="notifications.length > 0 || alerts !== 0 || alerts2 !== 0"></b-icon>
                         {{ user == '' ? email: user }}
                     </template>
                     <b-dropdown-item @click="showModal">个人信息</b-dropdown-item>
-                    <b-dropdown-item @click="showNotifications" v-if="notifications.length > 0">
+                    <b-dropdown-item @click="showNotifications" v-if="notifications.length > 0 || alerts !== 0 || alerts2 !== 0">
                         通知
-                        <b-icon icon="bell-fill" class="rounded-circle bg-danger p-2" scale="3" variant="light"></b-icon>
+                        <b-icon icon="bell-fill" class="rounded-circle bg-primary p-2" scale="3" variant="light"></b-icon>
                     </b-dropdown-item>
                     <b-dropdown-item @click="logout">登出</b-dropdown-item>
                 </b-nav-item-dropdown>
@@ -25,6 +25,8 @@
         </b-collapse>
         <UserEdit ref="user-edit" @reload="load" :info="info"></UserEdit>
         <b-modal ref="notifications" title="通知" size="lg" @hide="load">
+            <b-alert variant="danger" v-if="alerts2 !== 0" show>您有 {{ alerts2 }} 个租借已经到期，请及时归还！</b-alert>
+            <b-alert variant="warning" v-if="alerts !== 0" show>您有 {{ alerts }} 个租借距离到期时间不足 2 天，请及时归还。</b-alert>
             <div v-for="(post, index) in notifications" :key="index">
                 <b-alert show>
                     {{ post.content }}
@@ -56,7 +58,9 @@ export default {
             group: this.$store.state.group,
             email: this.$store.state.email,
             info: {},
-            notifications: {}
+            notifications: {},
+            alerts: 0,
+            alerts2: 0
         }
     },
     async created(){
@@ -107,6 +111,19 @@ export default {
                 this.notifications = response.data.list
             })
             this.notifications = this.notifications.filter(notification => notification.unread)
+            await this.axios.get('/api/equipment/', {
+                params: {
+                    user_id: this.$store.state.user_id
+                }
+            }).then(response => {
+                let now = new Date()
+                response.data.list.forEach(item => {
+                    let t = new Date(item.rent_until)
+                    let diff = (t - now) / 1000
+                    if(diff < 0) this.alerts2 += 1
+                    else if(diff / 86400 < 2) this.alerts += 1
+                })
+            })
         },
         showNotifications(){
             this.$refs['notifications'].show()

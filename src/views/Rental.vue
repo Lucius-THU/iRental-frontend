@@ -4,7 +4,7 @@
         <div class="overflow-auto">
             <b-tabs content-class="mt-3" pills card>
                 <b-tab title="当前租借" lazy @click.once="getloads">
-                    <b-table id="my-table2" :items="items2" :per-page="perPage2" :current-page="currentPage2" :fields="fields2" :busy="isBusy2">
+                    <b-table id="my-table2" :items="items2" :per-page="perPage2" :current-page="currentPage2" :fields="fields2" :busy="isBusy2" :sort-by.sync="sortBy2" :sort-asc.sync="sortAsc">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
@@ -107,6 +107,7 @@ export default {
             isBusy2: false,
             isBusy3: false,
             sortBy: 'status',
+            sortBy2: 'rent_until',
             sortAsc: true,
             req_info: {},
             flag: true,
@@ -313,6 +314,11 @@ export default {
             })
             for(let i = 0; i < this.rows2; i++){
                 items[i]['username'] = items[i].provider.name === '' ? items[i].provider.email: items[i].provider.name
+                let now = new Date()
+                let t = new Date(items[i].rent_until)
+                let diff = (t - now) / 1000
+                if(diff < 0) items[i]['_cellVariants'] = { rent_until: 'danger', returning: 'danger' }
+                else if(diff / 86400 < 2) items[i]['_cellVariants'] = { rent_until: 'warning', returning: 'warning' }
             }
             this.items2 = items
             this.isBusy2 = false
