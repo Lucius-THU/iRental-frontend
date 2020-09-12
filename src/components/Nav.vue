@@ -5,8 +5,9 @@
         <b-collapse id="nav-collapse" is-nav>
             <b-navbar-nav>
                 <b-nav-item href="/rental">租借信息</b-nav-item>
-                <b-nav-item v-if="auth(['admin', 'provider'])" @click="toMyEquipment">我的设备</b-nav-item>
-                <b-nav-item v-if="auth(['admin'])" @click="toUsers">管理用户</b-nav-item>
+                <b-nav-item v-if="auth(['admin', 'provider'])" @click="$router.push('/my-equipment')">我的设备</b-nav-item>
+                <b-nav-item v-if="auth(['admin'])" @click="$router.push('/users')">管理用户</b-nav-item>
+                <b-nav-item v-if="auth(['admin'])" @click="$router.push('/stat')">统计信息</b-nav-item>
             </b-navbar-nav>
             <b-navbar-nav class="ml-auto">
                 <b-nav-item-dropdown right>
@@ -75,12 +76,6 @@ export default {
         },
         auth(groups){
             return groups.indexOf(this.group) > -1
-        },
-        toMyEquipment(){
-            this.$router.push('/my-equipment')
-        },
-        toUsers(){
-            this.$router.push('/users')
         },
         showModal(){
             this.info = {
