@@ -25,8 +25,8 @@
                         <p>设备编号：{{ equip_info.id }}</p>
                         <p>设备名：{{ equip_info.name }}</p>
                         <p>提供者：{{ equip_info.provider_name }}</p>
-                        <p>归还时间：{{ equip_info.rent_until }}</p>
-                        <b-button class="mt-3" block variant="outline-primary" @click="returnE">归还</b-button>
+                        <p>到期时间：{{ equip_info.rent_until }}</p>
+                        <b-button v-if="!equip_info.status" class="mt-3" block variant="outline-primary" @click="close">归还</b-button>
                         <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
@@ -179,6 +179,15 @@ export default {
                     sortByFormatted: true
                 },
                 {
+                    key: 'returning',
+                    label: '状态',
+                    sortable: true,
+                    formatter: value => {
+                        return value ? '正在等待确认归还': '未归还'
+                    },
+                    sortByFormatted: true
+                },
+                {
                     key: 'actions',
                     label: '操作'
                 }
@@ -261,16 +270,19 @@ export default {
             this.$refs['request-info'].show()
         },
         info2(item){
-            this.equip_info.id = item.id
-            this.equip_info.provider_name = item.username
-            this.equip_info.name = item.name
-            this.equip_info.rent_until = format(item.rent_until)
+            this.equip_info = {
+                id: item.id,
+                provider_name: item.username,
+                name: item.name,
+                rent_until: format(item.rent_until),
+                status: item.returning
+            }
             this.$refs['equip-info'].show()
         },
         update(flag){
             this.axios.post('/api/requests/rental/' + this.req_info.id + '/update', {
                 approved: flag,
-                notification: '您对设备（' + this.req_info.equip_name + '，设备编号：' + this.req_info.equip_id + '）已被' + (flag ? '同意。请及时领取设备并按时归还！': '拒绝。')
+                notification: '您对设备（' + this.req_info.equip_name + '，设备编号：' + this.req_info.equip_id + '）的请求已被' + (flag ? '同意。请及时领取设备并按时归还！': '拒绝。')
             }).then(() => {
                 this.$refs['request-info'].hide()
                 this.getloads3()
@@ -283,8 +295,8 @@ export default {
                 this.load()
             })
         },
-        returnE(){
-            this.axios.post('/api/equipment/' + this.equip_info.id + '/return').then(() => {
+        close(){
+            this.axios.post('/api/equipment/' + this.equip_info.id + '/close').then(() => {
                 this.$refs['equip-info'].hide()
                 this.getloads()
             })

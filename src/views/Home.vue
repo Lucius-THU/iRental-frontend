@@ -82,6 +82,7 @@ export default {
                     label: '状态',
                     sortable: true,
                     formatter: (value, key, item) => {
+                        if(item['returning']) return '正等待确认归还'
                         if(item['user_id'] !== null) return '已借出'
                         if(item['launched']) return '在架上'
                         if(item['requesting']) return '正在申请上架'
@@ -114,7 +115,8 @@ export default {
                 rent_until: item.user_id !== null ? format(item.rent_until): '',
                 contact: item.provider.contact,
                 provider_name: item.provider.name,
-                email: item.provider.email
+                email: item.provider.email,
+                returning: item.returning
             }
             this.$refs['equipment'].$refs['equip-info'].show()
         },

@@ -11,14 +11,35 @@
             <b-navbar-nav class="ml-auto">
                 <b-nav-item-dropdown right>
                     <template v-slot:button-content>
+                        <b-icon icon="bell-fill" class="rounded-circle bg-danger p-2" scale="3" variant="light" v-if="notifications.length > 0"></b-icon>
                         {{ user == '' ? email: user }}
                     </template>
                     <b-dropdown-item @click="showModal">个人信息</b-dropdown-item>
+                    <b-dropdown-item @click="showNotifications" v-if="notifications.length > 0">
+                        通知
+                        <b-icon icon="bell-fill" class="rounded-circle bg-danger p-2" scale="3" variant="light"></b-icon>
+                    </b-dropdown-item>
                     <b-dropdown-item @click="logout">登出</b-dropdown-item>
                 </b-nav-item-dropdown>
             </b-navbar-nav>
         </b-collapse>
-       <UserEdit ref="user-edit" @reload="load" :info="info"></UserEdit>
+        <UserEdit ref="user-edit" @reload="load" :info="info"></UserEdit>
+        <b-modal ref="notifications" title="通知" size="lg" @hide="load">
+            <div v-for="(post, index) in notifications" :key="index">
+                <b-alert show>
+                    {{ post.content }}
+                    <b-button size="sm" class="mr-1" variant="outline-primary" @click="read(post.id, $event)">已读</b-button>
+                </b-alert>
+            </div>
+            <template v-slot:modal-footer="{ cancel }">
+                <b-button variant="success" @click="allread">
+                    全部已读
+                </b-button>
+                <b-button @click="cancel()">
+                    关闭
+                </b-button>
+            </template>
+        </b-modal>
     </b-navbar>
 </template>
 
@@ -34,7 +55,8 @@ export default {
             user: this.$store.state.username,
             group: this.$store.state.group,
             email: this.$store.state.email,
-            info: {}
+            info: {},
+            notifications: {}
         }
     },
     async created(){
@@ -80,6 +102,27 @@ export default {
                 this.email = response.data.email
             }).catch(error => {
                 if(error.response.status === 403) this.$router.push('/login')
+            })
+            await this.axios.get('/api/notifications/').then(response => {
+                this.notifications = response.data.list
+            })
+            this.notifications = this.notifications.filter(notification => notification.unread)
+        },
+        showNotifications(){
+            this.$refs['notifications'].show()
+        },
+        allread(){
+            for(let i = 0; i < this.notifications.length; i++){
+                this.axios.post('/api/notifications/update', {
+                    id: this.notifications[i].id
+                })
+            }
+            this.$refs['notifications'].hide()
+        },
+        read(id, event){
+            event.target.disabled = true
+            this.axios.post('/api/notifications/update', {
+                id: id
             })
         }
     }

@@ -210,9 +210,15 @@ export default {
         async getloads(){
             this.isBusy2 = true
             await this.axios.get('/api/requests/provider/').then(response => {
-                this.rows = response.data.list.length
+                this.rows2 = response.data.list.length
                 this.items2 = response.data.list
             })
+            for(let i = 0; i < this.rows2; i++){
+                this.items2[i].username = this.items2[i].user.name
+                this.items2[i].email = this.items2[i].user.email
+                this.items2[i].address = this.items2[i].user.address
+                this.items2[i].contact = this.items2[i].user.contact
+            }
             this.isBusy2 = false
         },
         verify(item){

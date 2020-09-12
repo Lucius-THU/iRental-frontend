@@ -14,6 +14,7 @@
             <p>计划下架时间：{{ equip_info.expire_at }}</p>
             <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">{{ equip_info.requesting ? '同意上架': '上架' }}</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id && $store.state.group !== 'admin') && !equip_info.launched && !equip_info.requesting" class="mt-3" block variant="success" @click="request">申请上架</b-button>
+            <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.returning" class="mt-3" block variant="success" @click="terminate">确认归还</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.launched" class="mt-3" block variant="warning" @click="discontinue">下架</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.requesting" class="mt-3" block variant="warning" @click="discontinue">{{ $store.state.group === 'admin' ? '拒绝上架': '取消申请上架' }}</b-button>
             <b-button v-if="equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin'" class="mt-3" block variant="primary" @click="update">修改</b-button>
@@ -142,6 +143,12 @@ export default {
             } else {
                 this.seen = true
             }
+        },
+        terminate(){
+            this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/terminate').then(() => {
+                this.$refs['equip-info'].hide()
+                this.$emit('reload', this.$store.state.user_id)
+            })
         }
     }
 }

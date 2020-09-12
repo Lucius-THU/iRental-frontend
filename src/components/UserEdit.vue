@@ -39,7 +39,7 @@
                         <b-icon icon="gear-wide-connected"></b-icon>
                     </b-input-group-prepend>
                     <b-form-select id="auth-input" v-model="info.group" :options="options" :disabled="$store.state.group !== 'admin' || info.group === 'admin'"></b-form-select>
-                    <b-input-group-append v-if="group !== 'admin'">
+                    <b-input-group-append v-if="group === 'user'">
                         <b-button variant="outline-primary" @click="create">申请成为提供者</b-button>
                     </b-input-group-append>
                 </b-input-group>

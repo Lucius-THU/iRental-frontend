@@ -138,6 +138,7 @@ export default {
                     label: '状态',
                     sortable: true,
                     formatter: (value, key, item) => {
+                        if(item['returning']) return '正等待确认归还'
                         if(item['user_id'] !== null) return '已借出'
                         if(item['launched']) return '在架上'
                         if(item['requesting']) return '正在申请上架'
@@ -174,6 +175,16 @@ export default {
                 {
                     key: 'contact',
                     label: '联系电话',
+                    sortable: true
+                },
+                {
+                    key: 'rented_at',
+                    label: '租借时间',
+                    sortable: true
+                },
+                {
+                    key: 'returned_at',
+                    label: '归还时间',
                     sortable: true
                 },
                 {
@@ -227,7 +238,8 @@ export default {
                 rent_until: item.user_id !== null ? format(item.rent_until): '',
                 contact: item.provider.contact,
                 provider_name: item.provider.name,
-                email: item.provider_email
+                email: item.provider_email,
+                returning: item.returning
             }
             this.$refs['equipment'].$refs['equip-info'].show()
         },
@@ -259,6 +271,8 @@ export default {
                 this.items2 = response.data.list
             })
             for(let i = 0; i < this.rows2; i++){
+                this.items2[i].rented_at = format(this.items2[i].rented_at)
+                this.items2[i].returned_at = this.items2[i].returned_at === null ? '-': format(this.items2[i].returned_at)
                 this.items2[i].username = this.items2[i].user.name
                 this.items2[i].email = this.items2[i].user.email
                 this.items2[i].contact = this.items2[i].user.contact
