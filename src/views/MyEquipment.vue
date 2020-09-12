@@ -65,6 +65,7 @@
                     <b-form-datepicker v-model="new_equip_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
                     <b-form-timepicker v-model="new_equip_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
                 </b-form-group>
+                <b-form-text v-if="seen" style="color: red !important;">请完整填写设备信息！</b-form-text>
             </b-form>
         </b-modal>
         <Equipment ref="equipment" :equip_info="equip_info" @reload="load"></Equipment>
@@ -95,6 +96,7 @@ export default {
             items: [],
             isBusy: true,
             equip_info: {},
+            seen: false,
             fields: [
                 {
                     key: 'id',
@@ -134,6 +136,7 @@ export default {
             this.$refs['create-equipment'].show()
         },
         load(data){
+            this.isBusy = true
             this.axios.get('/api/equipment/', {
                 params: {
                     provider_id: data
@@ -142,6 +145,8 @@ export default {
                 this.rows = response.data.total
                 this.items = response.data.list
                 this.isBusy = false
+            }).catch(error => {
+                if(error.response.status === 403) this.$router.push('/login')
             })
         },
         hideModal(){
@@ -149,6 +154,7 @@ export default {
             this.new_equip_addr = ''
             this.new_equip_date = ''
             this.new_equip_time = ''
+            this.seen = false
             this.$refs['create-equipment'].hide()
         },
         async info(item){
@@ -168,14 +174,20 @@ export default {
             }
             this.$refs['equipment'].$refs['equip-info'].show()
         },
-        handleSubmit(){
-            this.axios.post('/api/equipment/create', {
-                name: this.new_equip_name,
-                address: this.new_equip_addr,
-                expire_at: this.new_equip_date + 'T' + this.new_equip_time + '+08:00'
-            }).then(() => {
-                this.load()
-            })
+        handleSubmit(event){
+            event.preventDefault()
+            if(this.new_equip_name !== '' && this.new_equip_addr !== '' && this.new_equip_date !== '' && this.new_equip_time !== ''){
+                this.axios.post('/api/equipment/create', {
+                    name: this.new_equip_name,
+                    address: this.new_equip_addr,
+                    expire_at: this.new_equip_date + 'T' + this.new_equip_time + '+08:00'
+                }).then(() => {
+                    this.load(this.$store.state.user_id)
+                    this.$refs['create-equipment'].hide()
+                })
+            } else {
+                this.seen = true
+            }
         }
     }
 }

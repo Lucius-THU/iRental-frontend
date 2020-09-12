@@ -12,9 +12,10 @@
             <p v-if="equip_info.used">预计归还时间：{{ equip_info.rent_until }}</p>
             <p v-if="!equip_info.launched">申请情况：{{ equip_info.requesting ? '正在申请上架': '未申请上架' }}</p>
             <p>计划下架时间：{{ equip_info.expire_at }}</p>
-            <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">上架</b-button>
+            <b-button v-if="$store.state.group === 'admin' && !equip_info.launched" class="mt-3" block variant="success" @click="launch">{{ equip_info.requesting ? '同意上架': '上架' }}</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id && $store.state.group !== 'admin') && !equip_info.launched && !equip_info.requesting" class="mt-3" block variant="success" @click="request">申请上架</b-button>
             <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.launched" class="mt-3" block variant="warning" @click="discontinue">下架</b-button>
+            <b-button v-if="(equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin') && equip_info.requesting" class="mt-3" block variant="warning" @click="discontinue">{{ $store.state.group === 'admin' ? '拒绝上架': '取消申请上架' }}</b-button>
             <b-button v-if="equip_info.provider_id === $store.state.user_id || $store.state.group === 'admin'" class="mt-3" block variant="primary" @click="update">修改</b-button>
             <b-button v-if="equip_info.provider_id !== $store.state.user_id && equip_info.launched && !equip_info.used" class="mt-3" block variant="primary" @click="requests">申请租借</b-button>
             <b-button v-if="$store.state.group === 'admin' || equip_info.provider_id === $store.state.user_id" class="mt-3" block variant="danger" @click="del">删除</b-button>
@@ -52,6 +53,7 @@
                 <b-form-group label="归还时间" label-for="email-input">
                     <b-form-datepicker v-model="expire_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
                     <b-form-timepicker v-model="expire_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
+                    <b-form-text v-if="seen" style="color: red !important;">请完整填写归还时间！</b-form-text>
                 </b-form-group>
             </b-form>
         </b-modal>
@@ -71,6 +73,7 @@ export default {
             purpose: '',
             expire_date: '',
             expire_time: '',
+            seen: false,
         }
     },
     methods: {
@@ -89,47 +92,55 @@ export default {
                 expire_at: this.equip_date + 'T' + this.equip_time + '+08:00'
             }).then(() => {
                 this.$refs['equip-info'].hide()
-                this.$emit('reload')
+                this.$emit('reload', this.$store.state.user_id)
             })
         },
         del(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/delete').then(() => {
                 this.$refs['equip-info'].hide()
-                this.$emit('reload')
+                this.$emit('reload', this.$store.state.user_id)
             })
         },
         launch(){
-            this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/launch').then(() => {
+            this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/launch', {
+                notification: '您的设备（' + this.equip_info.name + '，设备编号：' + this.equip_info.equip_id + '）已由管理员' + (this.equip_info.requesting ? '同意上架！': '直接上架！')
+            }).then(() => {
                 this.$refs['equip-info'].hide()
-                this.$emit('reload')
+                this.$emit('reload', this.$store.state.user_id)
             })
         },
         discontinue(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/discontinue').then(() => {
                 this.$refs['equip-info'].hide()
-                this.$emit('reload')
+                this.$emit('reload', this.$store.state.user_id)
             })
         },
         request(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/request').then(() => {
                 this.$refs['equip-info'].hide()
-                this.$emit('reload')
+                this.$emit('reload', this.$store.state.user_id)
             })
         },
         requests(){
             this.expire_date = ''
             this.expire_time = ''
             this.purpose = ''
+            this.seen = false
             this.$refs['request-info'].show()
         },
-        handle2Submit(){
-            this.axios.post('/api/requests/rental/create', {
-                equipment_id: this.equip_info.equip_id,
-                purpose: this.purpose,
-                rent_until: this.expire_date + 'T' + this.expire_time + '+08:00'
-            }).then(() => {
-                this.$refs['equip-info'].hide()
-            })
+        handle2Submit(event){
+            event.preventDefault()
+            if(this.expire_date !== '' && this.expire_date !== ''){
+                this.axios.post('/api/requests/rental/create', {
+                    equipment_id: this.equip_info.equip_id,
+                    purpose: this.purpose,
+                    rent_until: this.expire_date + 'T' + this.expire_time + '+08:00'
+                }).then(() => {
+                    this.$refs['request-info'].hide()
+                })
+            } else {
+                this.seen = true
+            }
         }
     }
 }

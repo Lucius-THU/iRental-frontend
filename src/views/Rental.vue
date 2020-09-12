@@ -26,11 +26,27 @@
                         <p>设备名：{{ equip_info.name }}</p>
                         <p>提供者：{{ equip_info.provider_name }}</p>
                         <p>归还时间：{{ equip_info.rent_until }}</p>
-                        <b-button class="mt-3" block variant="outline-primary" @click="terminate">归还</b-button>
+                        <b-button class="mt-3" block variant="outline-primary" @click="returnE">归还</b-button>
                         <b-button class="mt-3" block @click="$bvModal.hide('equip-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
-                <b-tab title="我的申请" active>
+                <b-tab title="向我申请" lazy @click.once="getloads3" :disabled="$store.state.group === 'user'">
+                    <b-table id="my-table3" :items="items3" :per-page="perPage3" :current-page="currentPage3" :fields="fields3" :busy="isBusy2" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
+                        <template v-slot:table-busy>
+                            <div class="text-center text-primary my-2">
+                                <b-spinner class="align-middle"></b-spinner>
+                                <strong>Loading...</strong>
+                            </div>
+                        </template>
+                        <template v-slot:cell(actions)="data">
+                            <b-button size="sm" @click="info(data.item, false)" class="mr-1" variant="outline-primary">
+                                详情
+                            </b-button>
+                        </template>
+                    </b-table>
+                    <b-pagination align="center" v-model="currentPage3" :total-rows="rows3" :per-page="perPage3" aria-controls="my-table3" pills></b-pagination>
+                </b-tab>
+                <b-tab title="申请记录" active>
                     <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
@@ -60,22 +76,6 @@
                         <b-button class="mt-3" block @click="$bvModal.hide('request-info')">关闭</b-button>
                     </b-modal>
                 </b-tab>
-                <b-tab title="向我申请" lazy @click.once="getloads3" :disabled="$store.state.group === 'user'">
-                    <b-table id="my-table3" :items="items3" :per-page="perPage3" :current-page="currentPage3" :fields="fields3" :busy="isBusy" :sort-by.sync="sortBy" :sort-asc.sync="sortAsc">
-                        <template v-slot:table-busy>
-                            <div class="text-center text-primary my-2">
-                                <b-spinner class="align-middle"></b-spinner>
-                                <strong>Loading...</strong>
-                            </div>
-                        </template>
-                        <template v-slot:cell(actions)="data">
-                            <b-button size="sm" @click="info(data.item, false)" class="mr-1" variant="outline-primary">
-                                详情
-                            </b-button>
-                        </template>
-                    </b-table>
-                    <b-pagination align="center" v-model="currentPage3" :total-rows="rows3" :per-page="perPage3" aria-controls="my-table3" pills></b-pagination>
-                </b-tab>
             </b-tabs>
         </div>
     </div>
@@ -104,6 +104,7 @@ export default {
             items2: [],
             items3: [],
             isBusy: false,
+            isBusy2: false,
             sortBy: 'status',
             sortAsc: true,
             req_info: {},
@@ -220,7 +221,7 @@ export default {
     methods: {
         async load(flag=true){
             this.isBusy = flag
-            let items = await this.axios.get('/api/requests/rental').then(response => {
+            let items = await this.axios.get('/api/requests/rental/').then(response => {
                 this.rows = response.data.total
                 return response.data.list
             })
@@ -262,9 +263,11 @@ export default {
         },
         update(flag){
             this.axios.post('/api/requests/rental/' + this.req_info.id + '/update', {
-                approved: flag
+                approved: flag,
+                notification: '您对设备（' + this.req_info.equip_name + '，设备编号：' + this.req_info.equip_id + '）已被' + (flag ? '同意。请及时领取设备并按时归还！': '拒绝。')
             }).then(() => {
                 this.$refs['request-info'].hide()
+                this.getloads3()
                 this.load()
             })
         },
@@ -274,8 +277,8 @@ export default {
                 this.load()
             })
         },
-        terminate(){
-            this.axios.post('/api/equipment/' + this.equip_info.id + '/terminate').then(() => {
+        returnE(){
+            this.axios.post('/api/equipment/' + this.equip_info.id + '/return').then(() => {
                 this.$refs['equip-info'].hide()
                 this.getloads()
                 this.load(false)
@@ -299,21 +302,23 @@ export default {
             this.items2 = items
             this.isBusy = false
         },
-        async getloads2(){
-            this.isBusy = true
-            let items = await this.axios.get('/api/requests/rental', {
-                provided: 1
+        async getloads3(){
+            this.isBusy2 = true
+            let items = await this.axios.get('/api/requests/rental/', {
+                params: {
+                    provided: 1
+                }
             }).then(response => {
                 this.rows3 = response.data.total
                 return response.data.list
             })
-            for(let i = 0; i < this.rows; i++){
+            for(let i = 0; i < this.rows3; i++){
                 items[i]['canedit'] = items[i].equipment.user_id === null
                 items[i]['username'] = items[i].user.name === '' ? items[i].user.email: items[i].user.name
                 items[i]['equipment_name'] = items[i].equipment.name
             }
             this.items3 = items
-            this.isBusy = false
+            this.isBusy2 = false
         }
     }
 }
