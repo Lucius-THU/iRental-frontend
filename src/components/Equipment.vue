@@ -61,6 +61,11 @@
                 <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>
             </b-form>
         </b-modal>
+        <b-modal ref="reminder" ok-only>
+            <p>该预计下架时间<strong>早于当前时间</strong>，不得上架！</p>
+            <br>
+            <p>请修改预计下架时间后再上架！</p>
+        </b-modal>
     </div>
 </template>
 
@@ -123,12 +128,18 @@ export default {
             })
         },
         launch(){
-            this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/launch', {
-                notification: '您的设备（' + this.equip_info.name + '，设备编号：' + this.equip_info.equip_id + '）已由管理员' + (this.equip_info.requesting ? '同意上架！': '直接上架！')
-            }).then(() => {
-                this.$refs['equip-info'].hide()
-                this.$emit('reload', this.$store.state.user_id)
-            })
+            let t = new Date(this.equip_info.expire_at)
+            let now = new Date()
+            if(t < now){
+                this.$refs['reminder'].show()
+            } else {
+                this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/launch', {
+                    notification: '您的设备（' + this.equip_info.name + '，设备编号：' + this.equip_info.equip_id + '）已由管理员' + (this.equip_info.requesting ? '同意上架！': '直接上架！')
+                }).then(() => {
+                    this.$refs['equip-info'].hide()
+                    this.$emit('reload', this.$store.state.user_id)
+                })
+            }
         },
         discontinue(){
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/discontinue').then(() => {
@@ -137,10 +148,16 @@ export default {
             })
         },
         request(){
-            this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/request').then(() => {
-                this.$refs['equip-info'].hide()
-                this.$emit('reload', this.$store.state.user_id)
-            })
+            let t = new Date(this.equip_info.expire_at)
+            let now = new Date()
+            if(t < now){
+                this.$refs['reminder'].show()
+            } else {
+                this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/request').then(() => {
+                    this.$refs['equip-info'].hide()
+                    this.$emit('reload', this.$store.state.user_id)
+                })
+            }
         },
         requests(){
             this.expire_date = ''
