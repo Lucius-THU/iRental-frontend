@@ -13,14 +13,19 @@
                 </b-form-group>
             </b-col>
             <b-col lg="6" class="my-1">
-                <b-form-group label="选择字段以进行针对性筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
+                <b-form-group label="选择字段进行筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
                     <b-form-checkbox-group v-model="filterOn" class="mt-1">
                         <b-form-checkbox value="id">设备编号</b-form-checkbox>
                         <b-form-checkbox value="name">设备名</b-form-checkbox>
                         <b-form-checkbox value="address">设备地址</b-form-checkbox>
                     </b-form-checkbox-group>
+                    <b-form-text>留空时默认对以上三字段进行筛选</b-form-text>
                 </b-form-group>
-                <b-form-text>留空时默认对以上三字段进行筛选</b-form-text>
+                <b-form-group label="选择状态进行筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
+                    <b-form-checkbox-group label="" v-model="filter2On" class="mt-1">
+                        <b-form-checkbox value="returning" @click="load">待确认归还</b-form-checkbox>
+                    </b-form-checkbox-group>
+                </b-form-group>
             </b-col>
         </b-row>
         <div class="overflow-auto">
@@ -102,6 +107,7 @@ export default {
             timeflag: false,
             filter: '',
             filterOn: [],
+            filter2On: [],
             filterIgnore: ['expire_at', 'launched', 'provider', 'provider_id', 'rent_until', 'requesting', 'returning', 'user_id'],
             currentPage: 1,
             rows: 0,
@@ -202,16 +208,23 @@ export default {
             ]
         }
     },
+    watch: {
+        filter2On(){
+            this.load(this.$store.state.user_id)
+        }
+    },
     methods: {
         create(){
             this.$refs['create-equipment'].show()
         },
         load(data){
             this.isBusy = true
+            let params = { 
+                provider_id: data
+            }
+            if(this.filter2On.indexOf('returning') !== -1) params['returning'] = 'True'
             this.axios.get('/api/equipment/', {
-                params: {
-                    provider_id: data
-                }
+                params: params
             }).then(response => {
                 this.rows = response.data.total
                 this.items = response.data.list

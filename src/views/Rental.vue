@@ -130,15 +130,18 @@ export default {
                 },
                 {
                     key: 'equipment_name',
-                    label: '设备名'
+                    label: '设备名',
+                    sortable: true
                 },
                 {
                     key: 'provider_name',
-                    label: '提供者'
+                    label: '提供者',
+                    sortable: true
                 },
                 {
                     key: 'username',
-                    label: '申请者'
+                    label: '申请者',
+                    sortable: true
                 },
                 {
                     key: 'status',
