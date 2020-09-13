@@ -20,12 +20,12 @@
                         <b-form-checkbox value="address">设备地址</b-form-checkbox>
                     </b-form-checkbox-group>
                 </b-form-group>
-                <b-form-text>留空时默认对部分字段（包括未显示的）进行筛选</b-form-text>
+                <b-form-text>留空时默认对以上三字段进行筛选</b-form-text>
             </b-col>
         </b-row>
         <div class="overflow-auto">
             <b-button class="add-equip" variant="outline-primary" @click="create">添加设备</b-button>
-            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy" :filter="filter" :filterIncludedFields="filterOn">
+            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :busy="isBusy" :filter="filter" :filterIncludedFields="filterOn"  :filter-ignored-fields="filterIgnore">
                 <template v-slot:table-colgroup="scope">
                     <col v-for="field in scope.fields" :key="field.key" :style="{ width: field.key === 'id' ? '100px' : (field.key === 'address' ? '300px': '200px') }">
                 </template>
@@ -66,7 +66,7 @@
                 </b-form-group>
                 <b-form-group label="结束出租时间" label-for="email-input">
                     <b-form-datepicker v-model="new_equip_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
-                    <b-form-timepicker v-model="new_equip_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
+                    <b-form-timepicker v-model="new_equip_time" show-seconds :hour12="false" locale="de" placeholder="请选择时间"></b-form-timepicker>
                 </b-form-group>
                 <b-form-text v-if="seen" style="color: red !important;">请完整填写设备信息！</b-form-text>
                 <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>
@@ -102,6 +102,7 @@ export default {
             timeflag: false,
             filter: '',
             filterOn: [],
+            filterIgnore: ['expire_at', 'launched', 'provider', 'provider_id', 'rent_until', 'requesting', 'returning', 'user_id'],
             currentPage: 1,
             rows: 0,
             perPage: 10,

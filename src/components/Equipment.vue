@@ -42,7 +42,7 @@
                 </b-form-group>
                 <b-form-group label="结束出租时间" label-for="email-input">
                     <b-form-datepicker v-model="equip_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
-                    <b-form-timepicker v-model="equip_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
+                    <b-form-timepicker v-model="equip_time" show-seconds :hour12="false" locale="de" placeholder="请选择时间"></b-form-timepicker>
                 </b-form-group>
                 <b-form-text v-if="seen" style="color: red !important;">请完整填写归还时间！</b-form-text>
                 <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>
@@ -55,7 +55,7 @@
                 </b-form-group>
                 <b-form-group label="归还时间" label-for="email-input">
                     <b-form-datepicker v-model="expire_date" class="mb-3" placeholder="请选择日期"></b-form-datepicker>
-                    <b-form-timepicker v-model="expire_time" show-seconds :hour12="false" placeholder="请选择时间"></b-form-timepicker>
+                    <b-form-timepicker v-model="expire_time" show-seconds :hour12="false" locale="de" placeholder="请选择时间"></b-form-timepicker>
                 </b-form-group>
                 <b-form-text v-if="seen" style="color: red !important;">请完整填写归还时间！</b-form-text>
                 <b-form-text v-if="timeflag" style="color: red !important;">结束出租时间不得早于当前时间！</b-form-text>

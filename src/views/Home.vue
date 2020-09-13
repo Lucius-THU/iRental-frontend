@@ -13,13 +13,15 @@
                 </b-form-group>
             </b-col>
             <b-col lg="6" class="my-1">
-                <b-form-group label="选择字段或状态进行筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
+                <b-form-group label="选择字段进行筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
                     <b-form-checkbox-group v-model="filterOn" class="mt-1">
                         <b-form-checkbox value="id">设备编号</b-form-checkbox>
                         <b-form-checkbox value="name">设备名</b-form-checkbox>
                         <b-form-checkbox value="address">设备地址</b-form-checkbox>
                     </b-form-checkbox-group>
-                    <b-form-text>留空时默认对部分字段（包括未显示的）进行筛选</b-form-text>
+                    <b-form-text>留空时默认对以上三字段进行筛选</b-form-text>
+                </b-form-group>
+                <b-form-group label="选择状态进行筛选" label-cols-sm="3" label-align-sm="left" label-size="sm" class="mb-0">
                     <b-form-checkbox-group label="" v-model="filter2On" class="mt-1">
                         <b-form-checkbox value="requesting" @click="load">待同意上架</b-form-checkbox>
                         <b-form-checkbox value="returning" @click="load">待确认归还</b-form-checkbox>
@@ -28,7 +30,7 @@
             </b-col>
         </b-row>
         <div class="overflow-auto">
-            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :filter="filter" :filterIncludedFields="filterOn"
+            <b-table id="my-table" :items="items" :per-page="perPage" :current-page="currentPage" :fields="fields" :filter="filter" :filterIncludedFields="filterOn" :filter-ignored-fields="filterIgnore"
             :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :busy="isBusy">
                 <template v-slot:table-colgroup="scope">
                     <col v-for="field in scope.fields" :key="field.key" :style="{ width: field.key === 'id' ? '100px' : (field.key === 'address' ? '300px': '200px') }">
@@ -65,6 +67,7 @@ export default {
         return {
             filter: '',
             filterOn: [],
+            filterIgnore: ['expire_at', 'launched', 'provider', 'provider_id', 'rent_until', 'requesting', 'returning', 'user_id'],
             filter2On: [],
             currentPage: 1,
             rows: 0,
