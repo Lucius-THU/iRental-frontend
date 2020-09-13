@@ -12,13 +12,13 @@
             <b-navbar-nav class="ml-auto">
                 <b-nav-item-dropdown right>
                     <template v-slot:button-content>
-                        <b-icon icon="bell-fill" class="rounded-circle bg-primary p-2" scale="3" variant="light" v-if="notifications.length > 0 || alerts !== 0 || alerts2 !== 0"></b-icon>
+                        <b-badge v-if="noti_num" pill variant="primary">{{ noti_num }}</b-badge>
                         {{ user == '' ? email: user }}
                     </template>
                     <b-dropdown-item @click="showModal">个人信息</b-dropdown-item>
                     <b-dropdown-item @click="showNotifications" v-if="notifications.length > 0 || alerts !== 0 || alerts2 !== 0">
                         通知
-                        <b-icon icon="bell-fill" class="rounded-circle bg-primary p-2" scale="3" variant="light"></b-icon>
+                        <b-badge v-if="noti_num" pill variant="primary">{{ noti_num }}</b-badge>
                     </b-dropdown-item>
                     <b-dropdown-item @click="logout">登出</b-dropdown-item>
                 </b-nav-item-dropdown>
@@ -64,6 +64,11 @@ export default {
             alerts2: 0
         }
     },
+    computed: {
+        noti_num(){
+            return this.notifications.length + (this.alerts !== 0) + (this.alerts2 !== 0)
+        }
+    },
     async created(){
         await this.load()
         this.$emit('getContent', this.$store.state.user_id)
@@ -89,6 +94,8 @@ export default {
             this.$refs['user-edit'].$refs['person-info'].show()
         },
         async load(){
+            this.alerts = 0
+            this.alerts2 = 0
             await this.axios.get('/api/users/current').then(response => {
                 this.$store.commit('setUserid', response.data.id)
                 this.$store.commit('setUsername', response.data.name)
