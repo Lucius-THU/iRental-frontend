@@ -117,12 +117,12 @@ export default {
         this.load()
     },
     watch: {
-        filter2On(){
+        filter2On(){ // 实时更新对状态筛选的情况
             this.load()
         }
     },
     methods: {
-        async info(item){
+        async info(item){ // 弹出设备信息窗口
             this.equip_info = {
                 address: item.address,
                 equip_id: item.id,
@@ -140,7 +140,7 @@ export default {
             }
             this.$refs['equipment'].$refs['equip-info'].show()
         },
-        async load(){
+        async load(){ // 页面内容请求
             this.isBusy = true
             let params = {}
             if(this.filter2On.indexOf('requesting') !== -1) params['requesting'] = 'True'

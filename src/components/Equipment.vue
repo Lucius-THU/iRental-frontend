@@ -87,7 +87,7 @@ export default {
         }
     },
     methods: {
-        update(){
+        update(){ // 修改设备信息
             this.seen = false
             this.timeflag = false
             this.equip_name = this.equip_info.name
@@ -97,7 +97,7 @@ export default {
             this.equip_time = time[1]
             this.$refs['update-equipment'].show()
         },
-        handleSubmit(event){
+        handleSubmit(event){ // 提交对设备信息的修改
             event.preventDefault()
             if(this.equip_name !== '' && this.equip_addr !== '' && this.equip_date !== '' && this.equip_time !== ''){
                 this.seen = false
@@ -121,13 +121,13 @@ export default {
                 this.timeflag = false
             }
         },
-        del(){
+        del(){ // 删除设备
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/delete').then(() => {
                 this.$refs['equip-info'].hide()
                 this.$emit('reload', this.$store.state.user_id)
             })
         },
-        launch(){
+        launch(){ // 上架设备
             let t = new Date(this.equip_info.expire_at)
             let now = new Date()
             if(t < now){
@@ -141,13 +141,13 @@ export default {
                 })
             }
         },
-        discontinue(){
+        discontinue(){ // 下架设备
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/discontinue').then(() => {
                 this.$refs['equip-info'].hide()
                 this.$emit('reload', this.$store.state.user_id)
             })
         },
-        request(){
+        request(){ // 申请上架
             let t = new Date(this.equip_info.expire_at)
             let now = new Date()
             if(t < now){
@@ -159,7 +159,7 @@ export default {
                 })
             }
         },
-        requests(){
+        requests(){ // 申请租借
             this.expire_date = ''
             this.expire_time = ''
             this.purpose = ''
@@ -167,7 +167,7 @@ export default {
             this.timeflag = false
             this.$refs['request-info'].show()
         },
-        handle2Submit(event){
+        handle2Submit(event){ // 提交租借申请
             event.preventDefault()
             if(this.expire_date !== '' && this.expire_date !== ''){
                 this.seen = false
@@ -190,7 +190,7 @@ export default {
                 this.timeflag = false
             }
         },
-        terminate(){
+        terminate(){ // 确认归还
             this.axios.post('/api/equipment/' + this.equip_info.equip_id + '/terminate').then(() => {
                 this.$refs['equip-info'].hide()
                 this.$emit('reload', this.$store.state.user_id)

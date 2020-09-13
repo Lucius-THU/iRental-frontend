@@ -35,18 +35,18 @@ export default {
         }
     },
     computed: {
-        emailState(){
+        emailState(){ // 判断邮箱地址是否符合格式
             if(this.email == '' && !this.onceTry){
                 return null
             }
             let pattern = /^\w[\w\\-]*@\w[\w\\-]*(\.\w[\w\\-]*)+$/
             return pattern.test(this.email)
         },
-        pwdState(){
+        pwdState(){ // 判断密码是否为空
             if(!this.onceTry) return null
             return this.password != ''
         },
-        invalidFeedback(){
+        invalidFeedback(){ // 错误输入的反馈
             if(this.error) {
                 return '账号或密码错误'
             } else {
@@ -55,7 +55,7 @@ export default {
         },
     },
     methods: {
-        login(){
+        login(){ // 登录
             this.onceTry = true
             if(this.emailState && this.pwdState){
                 this.axios.post('/api/login', {

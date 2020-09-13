@@ -180,7 +180,7 @@ export default {
         this.load()
     },
     methods: {
-        async load(){
+        async load(){ // 加载用户信息页面
             if(this.flag) this.$refs['nav'].load()
             this.flag = false
             this.isBusy = true
@@ -190,7 +190,7 @@ export default {
             })
             this.isBusy = false
         },
-        edit(item){
+        edit(item){ // 编辑用户信息
             this.info = {
                 group: item.group,
                 name: item.name,
@@ -207,7 +207,7 @@ export default {
             if(value === 'provider') return '设备提供者'
             return '普通用户'
         },
-        async getloads(){
+        async getloads(){ // 提供者申请页面加载
             this.isBusy2 = true
             await this.axios.get('/api/requests/provider/').then(response => {
                 this.rows2 = response.data.list.length
@@ -221,13 +221,13 @@ export default {
             }
             this.isBusy2 = false
         },
-        verify(item){
+        verify(item){ // 确认是否同意提供者申请的窗口弹出
             this.id = item.id
             this.text = item.info
             this.checked = item.approved || item.rejected
             this.$refs['request-info'].show()
         },
-        update(flag){
+        update(flag){ // 更新提供者申请的审批情况
             this.axios.post('/api/requests/provider/' + this.id + '/update', {
                 approved: flag,
                 notification: '你的提供者申请已被' + (flag ? '同意。': '拒绝。')

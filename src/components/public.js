@@ -1,4 +1,4 @@
-export default function format(time, format='yyyy-MM-dd HH:mm:ss') {
+export default function format(time, format='yyyy-MM-dd HH:mm:ss') { // 处理同服务器返回的时间格式
     let t = new Date(time)
     let tf = i => ((i < 10 ? '0' : '') + i)
     return format.replace(/yyyy|MM|dd|HH|mm|ss/g, a => {

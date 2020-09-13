@@ -237,7 +237,7 @@ export default {
         this.load()
     },
     methods: {
-        async load(){
+        async load(){ // 加载申请记录
             this.isBusy = true
             let items = await this.axios.get('/api/requests/rental/').then(response => {
                 this.rows = response.data.total
@@ -252,12 +252,12 @@ export default {
             this.items = items
             this.isBusy = false
         },
-        status(approved, rejected){
+        status(approved, rejected){ // 计算设备状态
             if(approved === false && rejected === true) return '已拒绝'
             if(approved === true) return '已同意'
             return '待处理'
         },
-        info(item, flag){
+        info(item, flag){ // 获取申请记录的信息
             this.flag = flag
             this.req_info = {
                 id: item.id,
@@ -273,7 +273,7 @@ export default {
             }
             this.$refs['request-info'].show()
         },
-        info2(item){
+        info2(item){ // 已租借设备的信息加载
             this.equip_info = {
                 id: item.id,
                 provider_name: item.username,
@@ -283,7 +283,7 @@ export default {
             }
             this.$refs['equip-info'].show()
         },
-        update(flag){
+        update(flag){ // 处理申请
             this.axios.post('/api/requests/rental/' + this.req_info.id + '/update', {
                 approved: flag,
                 notification: '您对设备（' + this.req_info.equip_name + '，设备编号：' + this.req_info.equip_id + '）的请求已被' + (flag ? '同意。请及时领取设备并按时归还！': '拒绝。')
@@ -293,19 +293,19 @@ export default {
                 this.load()
             })
         },
-        del(){
+        del(){ // 删除申请
             this.axios.post('/api/requests/rental/' + this.req_info.id + '/delete').then(() => {
                 this.$refs['request-info'].hide()
                 this.load()
             })
         },
-        close(){
+        close(){ // 归还设备
             this.axios.post('/api/equipment/' + this.equip_info.id + '/close').then(() => {
                 this.$refs['equip-info'].hide()
                 this.getloads()
             })
         },
-        async getloads(){
+        async getloads(){ // 当前租借内容加载
             this.isBusy2 = true
             let items = await this.axios.get('/api/equipment/', {
                 params: {
@@ -326,7 +326,7 @@ export default {
             this.items2 = items
             this.isBusy2 = false
         },
-        async getloads3(){
+        async getloads3(){ // 租借我的设备的申请内容加载
             this.isBusy3 = true
             let items = await this.axios.get('/api/requests/rental/', {
                 params: {

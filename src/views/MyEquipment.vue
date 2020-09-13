@@ -209,15 +209,15 @@ export default {
         }
     },
     watch: {
-        filter2On(){
+        filter2On(){ // 对状态筛选的实时更新
             this.load(this.$store.state.user_id)
         }
     },
     methods: {
-        create(){
+        create(){ // 添加设备
             this.$refs['create-equipment'].show()
         },
-        load(data){
+        load(data){ // 加载页面内容
             this.isBusy = true
             let params = { 
                 provider_id: data
@@ -233,7 +233,7 @@ export default {
                 if(error.response.status === 403) this.$router.push('/login')
             })
         },
-        hideModal(){
+        hideModal(){ // 取消添加新设备
             this.new_equip_name = ''
             this.new_equip_addr = ''
             this.new_equip_date = ''
@@ -241,7 +241,7 @@ export default {
             this.seen = false
             this.$refs['create-equipment'].hide()
         },
-        async info(item){
+        async info(item){ // 弹出设备信息窗口
             this.equip_info = {
                 address: item.address,
                 equip_id: item.id,
@@ -259,7 +259,7 @@ export default {
             }
             this.$refs['equipment'].$refs['equip-info'].show()
         },
-        handleSubmit(event){
+        handleSubmit(event){ // 添加设备的提交
             event.preventDefault()
             if(this.new_equip_name !== '' && this.new_equip_addr !== '' && this.new_equip_date !== '' && this.new_equip_time !== ''){
                 this.seen = false
@@ -282,7 +282,7 @@ export default {
                 this.timeflag = false
             }
         },
-        async load_data(item){
+        async load_data(item){ // 设备历史记录的加载
             this.isBusy2 = true
             this.perPage2 = 10
             this.currentPage2 = 1

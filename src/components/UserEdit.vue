@@ -39,7 +39,7 @@
                         <b-icon icon="gear-wide-connected"></b-icon>
                     </b-input-group-prepend>
                     <b-form-select id="auth-input" v-model="info.group" :options="options" :disabled="$store.state.group !== 'admin' || info.group === 'admin'"></b-form-select>
-                    <b-input-group-append v-if="group === 'user'">
+                    <b-input-group-append v-if="$store.state.group === 'user'">
                         <b-button variant="outline-primary" @click="create">申请成为提供者</b-button>
                     </b-input-group-append>
                 </b-input-group>
@@ -61,11 +61,6 @@ export default {
     data(){
         return {
             text: '',
-            group: this.$store.state.group,
-            name: this.$store.state.username,
-            email: this.$store.state.email,
-            address: this.$store.state.address,
-            contact: this.$store.state.contact,
             options: [
                 { value: 'admin', text: '管理员', disabled: true },
                 { value: 'provider', text: '设备提供者' },
@@ -74,7 +69,7 @@ export default {
         }
     },
     methods: {
-        handleSubmit(){
+        handleSubmit(){ // 提交对用户信息的编辑
             this.axios.post('/api/users/' + this.info.id + '/update', {
                 name: this.info.name,
                 address: this.info.address,
@@ -84,17 +79,17 @@ export default {
                 this.$emit('reload')
             })
         },
-        del(){
+        del(){ // 删除用户
             this.axios.post('api/users/' + this.info.id + '/delete').then(() => {
                 this.$refs['person-info'].hide()
                 this.$emit('reload')
             })
         },
-        create(){
+        create(){ // 设备提供者申请窗口
             this.text = ''
             this.$refs['request-info'].show()
         },
-        handle2Submit(){
+        handle2Submit(){ // 提交成为设备提供者的申请
             this.axios.post('/api/requests/provider/create', {
                 user_id: this.$store.state.user_id,
                 info: this.text

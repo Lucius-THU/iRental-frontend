@@ -59,23 +59,23 @@ export default {
         }
     },
     computed: {
-        state(){
+        state(){ // 判断输入内容是否正常
             return this.emailState && this.pwdState && this.pwd2State
         },
-        emailState(){
+        emailState(){ // 邮箱格式判断
             if(this.email == '' && !this.onceTry){
                 return null
             }
             let pattern = /^\w[\w\\-]*@\w[\w\\-]*(\.\w[\w\\-]*)+$/
             return pattern.test(this.email)
         },
-        pwdState(){
+        pwdState(){ // 密码有效性判断
             if(this.password == '' && !this.onceTry){
                 return null
             }
             return this.password.length > 5
         },
-        pwd2State(){
+        pwd2State(){ // 再次输入密码验证
             if(this.password2 == ''){
                 if(this.onceTry && this.password != '') return false
                 return null
@@ -84,7 +84,7 @@ export default {
         }
     },
     methods: {
-        signup(){
+        signup(){ // 注册
             this.axios.post('/api/signup', {
                 email: this.email,
                 password: this.password,
@@ -99,7 +99,7 @@ export default {
                 }
             })
         },
-        change(evt){
+        change(evt){ // 处理发送验证码等状态
             this.onceTry = true
             if(this.state){
                 this.cantSignup = false

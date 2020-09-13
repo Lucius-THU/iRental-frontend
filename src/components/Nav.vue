@@ -65,7 +65,7 @@ export default {
         }
     },
     computed: {
-        noti_num(){
+        noti_num(){ // 通知数量
             return this.notifications.length + (this.alerts !== 0) + (this.alerts2 !== 0)
         }
     },
@@ -74,15 +74,15 @@ export default {
         this.$emit('getContent', this.$store.state.user_id)
     },
     methods: {
-        logout(){
+        logout(){ // 登出
             this.axios.post('/api/logout').then(() => {
                 this.$router.push('/login')
             })
         },
-        auth(groups){
+        auth(groups){ // 判断权限
             return groups.indexOf(this.group) > -1
         },
-        showModal(){
+        showModal(){ // 显示个人信息窗口
             this.info = {
                 group: this.group,
                 name: this.user,
@@ -93,7 +93,7 @@ export default {
             }
             this.$refs['user-edit'].$refs['person-info'].show()
         },
-        async load(){
+        async load(){ // 加载用户数据
             this.alerts = 0
             this.alerts2 = 0
             await this.axios.get('/api/users/current').then(response => {
@@ -127,10 +127,10 @@ export default {
                 })
             })
         },
-        showNotifications(){
+        showNotifications(){ // 显示通知窗口
             this.$refs['notifications'].show()
         },
-        allread(){
+        allread(){ // 标记所有通知已读
             for(let i = 0; i < this.notifications.length; i++){
                 this.axios.post('/api/notifications/update', {
                     id: this.notifications[i].id
@@ -138,7 +138,7 @@ export default {
             }
             this.$refs['notifications'].hide()
         },
-        read(id, event){
+        read(id, event){ // 标记通知为已读
             event.target.disabled = true
             this.axios.post('/api/notifications/update', {
                 id: id
