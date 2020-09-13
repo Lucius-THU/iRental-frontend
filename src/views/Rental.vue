@@ -8,7 +8,7 @@
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
-                                <strong>Loading...</strong>
+                                <strong>  加载中……</strong>
                             </div>
                         </template>
                         <template v-slot:cell(status)="data">
@@ -35,7 +35,7 @@
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
-                                <strong>Loading...</strong>
+                                <strong>  加载中……</strong>
                             </div>
                         </template>
                         <template v-slot:cell(actions)="data">
@@ -51,7 +51,7 @@
                         <template v-slot:table-busy>
                             <div class="text-center text-primary my-2">
                                 <b-spinner class="align-middle"></b-spinner>
-                                <strong>Loading...</strong>
+                                <strong>  加载中……</strong>
                             </div>
                         </template>
                         <template v-slot:cell(actions)="data">

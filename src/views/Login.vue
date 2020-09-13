@@ -14,7 +14,7 @@
                     <b-input-group-prepend is-text>
                         <b-icon icon="shield-lock-fill"></b-icon>
                     </b-input-group-prepend>
-                    <b-form-input id="input-2" v-model="password" type="password" :state="pwdState"></b-form-input>
+                    <b-form-input id="input-2" v-model="password" type="password" :state="pwdState" @keyup.enter="login"></b-form-input>
                 </b-input-group>
             </b-form-group>
             <b-button variant="outline-primary" id="login-btn" @click.prevent="login">登录</b-button>

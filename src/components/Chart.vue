@@ -1,6 +1,6 @@
 <template>
-  <div class="echarts-box" :id="id">
-  </div>
+    <div class="echarts-box" :id="id">
+    </div>
 </template>
  
 <script>
